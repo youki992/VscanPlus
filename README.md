@@ -2,7 +2,7 @@
   <b>VscanPlus</b>
   <br>
 </h1>
-<p align="center">更新版本的vscan，开源、轻量、快速、跨平台 的网站漏洞扫描工具，帮助您快速检测网站安全隐患。</p>
+<p align="center">二次开发版本的vscan，开源、轻量、快速、跨平台 的网站漏洞扫描工具，帮助您快速检测网站安全隐患。</p>
 
 # Features
 
