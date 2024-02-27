@@ -3,11 +3,10 @@
 
 # Features
 
-<h1 align="center">
-  <img src="static/run.png" alt="vscan" width="850px"></a>
-  <img src="static/result.png" alt="vscan" width="850px"></a>
-  <br>
-</h1>
+<div style="text-align: center;">
+    <img src="static/run.png" alt="vscan" style="width: 850; display: block; margin: 0 auto;">
+    <img src="static/result.png" alt="vscan" style="width: 850; display: block; margin: 0 auto;">
+</div>
 
 # Updates
 
