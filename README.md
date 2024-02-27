@@ -27,15 +27,15 @@
 </div>
 
 - 根据原vscan开发文档，指纹对应的poc命名格式为：指纹-xxxx-yml，因此对新增的poc进行了格式统一，包括：
-- 泛微oa
-- 用友oa
-- 通达oa
-- thinphp
-- spring-boot
-- apache-tomcat
-- drupal
-- microsoft-exchange
-- sangfor
+1. 泛微oa 
+2. 用友oa
+3. 通达oa
+4. thinphp
+5. spring-boot
+6. apache-tomcat
+7. drupal
+8. microsoft-exchange
+9. sangfor
 
 - 在原vscan的xray单规则检测基础上，更新为yml v2多规则检测，可以实现多表达式的检测功能
 
