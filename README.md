@@ -5,8 +5,7 @@
 
 <h1 align="center">
   <img src="static/run.png" alt="vscan" width="850px"></a>
-  <br>
-    <img src="static/result.png" alt="vscan" width="850px"></a>
+  <img src="static/result.png" alt="vscan" width="850px"></a>
   <br>
 </h1>
 
