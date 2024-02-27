@@ -5,7 +5,7 @@
 
 <div style="text-align: center;">
     <img src="static/run.png" alt="vscan" style="width: 850px; display: block; margin: 0 auto;">
-    <img src="static/result.png" alt="vscan" style="width: 150px; display: block; margin: 0 auto;">
+    <img src="static/result.png" alt="vscan" style="width: 850px; display: block; margin: 0 auto;">
 </div>
 
 
