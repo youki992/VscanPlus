@@ -18,11 +18,20 @@
 # Commits
 
 - 根据原vscan开发文档，用户可以自定义指纹和poc，两者的调用关系是：先检测指纹，再调用对应poc，类似于nuclei前不久更新的-ac命令行的检测功能，都是基于指纹来检测漏洞
-![image](./static/fingerprint.png)
+
+<div style="text-align: center;">
+    <img src="static/fingerprint.png" alt="vscan" style="width: 850; display: block; margin: 0 auto;">
+</div>
+
 - 根据原vscan开发文档，指纹对应的poc命名格式为：指纹-xxxx-yml，因此对新增的poc进行了格式统一，包括：泛微oa、用友oa、通达oa、thinphp、spring-boot、apache-tomcat、drupal、microsoft-exchange、sangfor的poc，后续也可自定义规范名称
 - 在原vscan的xray单规则检测基础上，更新为yml v2多规则检测，可以实现多表达式的检测功能
-![image](./static/rule_one.png)
-![image](./static/rule_two.png)
+
+<div style="text-align: center;">
+    <img src="static/rule_one.png" alt="vscan" style="width: 850; display: block; margin: 0 auto;">
+</div>
+<div style="text-align: center;">
+    <img src="static/rule_two.png" alt="vscan" style="width: 850; display: block; margin: 0 auto;">
+</div>
 
 # Reference
 
