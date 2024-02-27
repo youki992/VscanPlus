@@ -1,1 +1,22 @@
+name: springblade-jwt
+transport: http
+manual: true
+rules:
+  r0:
+    request:
+      method: GET
+      path: /api/blade-user/user-list
+      headers:
+        Blade-Auth: >-
+          bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsIm5hbWUiOiJhZG1pbiIsInJvbGVfbmFtZSI6ImFkbWluaXN0cmF0b3IifQ.3KqH3YSCVDA2wpD1JB4p5iOqFK_qa3pjuwIQOpSYB1e_CEQL4g-Ulkn_oJyOGBtBvJQn_qiMn59jFbMGnNHUwA
+      expression: response.status == 200 && response.body.bcontains(b"tenantId") && response.body.bcontains(b"deptId")
+  r1:
+    request:
+      method: GET
+      path: /blade-user/user-list
+      headers:
+        Blade-Auth: >-
+          bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsIm5hbWUiOiJhZG1pbiIsInJvbGVfbmFtZSI6ImFkbWluaXN0cmF0b3IifQ.3KqH3YSCVDA2wpD1JB4p5iOqFK_qa3pjuwIQOpSYB1e_CEQL4g-Ulkn_oJyOGBtBvJQn_qiMn59jFbMGnNHUwA
+      expression: response.status == 200 && response.body.bcontains(b"tenantId") && response.body.bcontains(b"deptId")
+expression: r0() || r1()
 
