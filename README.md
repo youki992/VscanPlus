@@ -45,6 +45,7 @@ sangfor
 <div style="text-align: center;">
     <img src="static/nuclei.png" alt="vscan" style="width: 850; display: block; margin: 0 auto;">
 </div>
+
 - 在原vscan的xray单规则检测基础上，更新为yml v2多规则检测，可以实现多表达式的检测功能
 
 # Reference
