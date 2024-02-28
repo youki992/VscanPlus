@@ -26,7 +26,7 @@
     <img src="static/fingerprint.png" alt="vscan" style="width: 850; display: block; margin: 0 auto;">
 </div>
 
-- 根据原vscan开发文档，指纹对应的poc命名格式为：指纹-xxxx-yml，因此对新增的poc进行了格式统一，包括：
+- 根据原vscan开发文档，指纹对应的xray poc命名格式为：指纹-xxxx-yml，因此对新增的poc进行了格式统一，包括：
 ``
 泛微oa 
 用友oa
