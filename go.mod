@@ -1,4 +1,4 @@
-module github.com/veo/vscan
+module github.com/youki992/VscanPlus
 
 go 1.17
 
