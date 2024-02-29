@@ -16,6 +16,7 @@
 - nuclei检测脚本更新
 - xray检测脚本更新
 - 支持xray yml v2语法
+- 修复nuclei模板读取缺失字段报错
 - 规范指纹名称，nuclei、xray检测脚本命名格式
 
 # Commits
@@ -47,6 +48,10 @@ sangfor
 </div>
 
 - 在原vscan的xray单规则检测基础上，更新为yml v2多规则检测，可以实现多表达式的检测功能
+
+# Todo
+
+- 待修复nuclei的yaml脚本中如果带有dnslog字段{{interactsh-url}}，无法渲染成功的问题
 
 # Reference
 
