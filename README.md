@@ -4,6 +4,13 @@
 </h1>
 <p align="center">二次开发版本的vscan，开源、轻量、快速、跨平台 的网站漏洞扫描工具，帮助您快速检测网站安全隐患。</p>
 
+<p align="center">
+<a href="https://github.com/youki992/VscanPlus/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat"></a>
+<a href="https://github.com/youki992/VscanPlus"><img alt="Release" src="https://img.shields.io/badge/LICENSE-BSD-important"></a>
+<a href="https://github.com/youki992/VscanPlus/releases"><img src="https://img.shields.io/github/release/veo/vscan"></a>
+<a href="https://github.com/youki992/VscanPlus/releases"><img src="https://img.shields.io/github/downloads/veo/vscan/total?color=blueviolet"></a>
+</p>
+
 # Features
 
 ![image](./static/exec.png)
