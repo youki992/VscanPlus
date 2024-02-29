@@ -54,7 +54,7 @@ sangfor
 
 # Warning
 
-- 如需编译生成可执行文件，请下载release中的vcsanplus-main.zip文件
+- 如需编译生成可执行文件，请下载release中的vcsanplus-main-code.zip文件
 
 # Reference
 
