@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/veo/vscan/pocs_yml/pkg/xray/structs"
+	"github.com/youki992/VscanPlus/pocs_yml/pkg/xray/structs"
 	"gopkg.in/yaml.v2"
 )
 

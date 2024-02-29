@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/projectdiscovery/gologger"
-	"github.com/veo/vscan/pocs_yml/check"
-	common_structs "github.com/veo/vscan/pocs_yml/pkg/common/structs"
-	"github.com/veo/vscan/pocs_yml/pkg/nuclei/catalog"
-	"github.com/veo/vscan/pocs_yml/pkg/nuclei/parse"
-	xray_requests "github.com/veo/vscan/pocs_yml/pkg/xray/requests"
-	"github.com/veo/vscan/pocs_yml/utils"
+	"github.com/youki992/VscanPlus/pocs_yml/check"
+	common_structs "github.com/youki992/VscanPlus/pocs_yml/pkg/common/structs"
+	"github.com/youki992/VscanPlus/pocs_yml/pkg/nuclei/catalog"
+	"github.com/youki992/VscanPlus/pocs_yml/pkg/nuclei/parse"
+	xray_requests "github.com/youki992/VscanPlus/pocs_yml/pkg/xray/requests"
+	"github.com/youki992/VscanPlus/pocs_yml/utils"
 )
 
 //go:embed xrayFiles
@@ -44,7 +44,10 @@ func NucleiCheck(target string, ceyeapi string, ceyedomain string, proxy string,
 	if err != nil {
 		gologger.Error().Msgf("Could not find template: %s\n", err)
 	}
-	ExcludeTags := []string{"apache", "java", "php"}
+	// ExcludeTags := []string{"apache", "java", "php"}
+	ExcludeTags := []string{}
 	templatesList := check.LoadTemplatesWithTags(list, Tags, ExcludeTags, NucleiPocs)
+	// fmt.Println("muclei!!")
+	// fmt.Println(templatesList)
 	return check.NucleiStart(target, templatesList)
 }

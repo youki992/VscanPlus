@@ -20,10 +20,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
 
-	// "github.com/veo/vscan/pocs_yml/pkg/xray/cel"
+	// "github.com/youki992/VscanPlus/pocs_yml/pkg/xray/cel"
 	"github.com/google/cel-go/cel"
-	"github.com/veo/vscan/pocs_yml/pkg/xray/structs"
-	xray_structs "github.com/veo/vscan/pocs_yml/pkg/xray/structs"
+	"github.com/youki992/VscanPlus/pocs_yml/pkg/xray/structs"
+	xray_structs "github.com/youki992/VscanPlus/pocs_yml/pkg/xray/structs"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 

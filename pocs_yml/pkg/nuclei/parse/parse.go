@@ -7,10 +7,10 @@ import (
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog"
 	"github.com/projectdiscovery/nuclei/v2/pkg/protocols"
 	"github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/protocolinit"
-	"github.com/veo/vscan/pocs_yml/pkg/nuclei/templates"
+	"github.com/youki992/VscanPlus/pocs_yml/pkg/nuclei/templates"
 
 	"github.com/projectdiscovery/nuclei/v2/pkg/types"
-	"github.com/veo/vscan/pocs_yml/pkg/nuclei/structs"
+	"github.com/youki992/VscanPlus/pocs_yml/pkg/nuclei/structs"
 
 	"go.uber.org/ratelimit"
 )

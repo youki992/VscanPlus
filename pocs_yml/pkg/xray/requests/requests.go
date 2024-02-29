@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/tls"
-	"github.com/veo/vscan/pocs_yml/pkg/xray/structs"
+	"github.com/youki992/VscanPlus/pocs_yml/pkg/xray/structs"
 	"io"
 	"io/ioutil"
 	"net"

@@ -9,7 +9,7 @@ import (
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/google/cel-go/interpreter/functions"
-	"github.com/veo/vscan/pocs_yml/pkg/xray/structs"
+	"github.com/youki992/VscanPlus/pocs_yml/pkg/xray/structs"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
