@@ -4,10 +4,6 @@
 </h1>
 <p align="center">二次开发版本的vscan，开源、轻量、快速、跨平台 的网站漏洞扫描工具，帮助您快速检测网站安全隐患。</p>
 
-# Warning
-
-- 如需编译生成可执行文件，请下载release中的vcsanplus-main.zip文件
-
 # Features
 
 ![image](./static/exec.png)
@@ -55,6 +51,10 @@ sangfor
 # Todo
 
 - 待修复nuclei的yaml脚本中如果带有dnslog字段{{interactsh-url}}，无法渲染成功的问题
+
+# Warning
+
+- 如需编译生成可执行文件，请下载release中的vcsanplus-main.zip文件
 
 # Reference
 
