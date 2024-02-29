@@ -6,8 +6,7 @@
 
 # Features
 
-![image](./static/run.png)
-![image](./static/result.png)
+![image](./static/exec.png)
 
 
 # Updates
