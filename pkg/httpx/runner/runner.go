@@ -23,10 +23,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/veo/vscan/brute"
-	"github.com/veo/vscan/pkg/fingerprint"
-	"github.com/veo/vscan/pocs_go"
-	"github.com/veo/vscan/pocs_yml"
+	"github.com/youki992/VscanPlus/brute"
+	"github.com/youki992/VscanPlus/pkg/fingerprint"
+	"github.com/youki992/VscanPlus/pocs_go"
+	"github.com/youki992/VscanPlus/pocs_yml"
 
 	"github.com/ammario/ipisp/v2"
 	"github.com/bluele/gcache"
@@ -38,7 +38,7 @@ import (
 	"github.com/projectdiscovery/retryablehttp-go"
 	"github.com/projectdiscovery/stringsutil"
 	"github.com/projectdiscovery/urlutil"
-	"github.com/veo/vscan/pkg/httpx/common/hashes"
+	"github.com/youki992/VscanPlus/pkg/httpx/common/hashes"
 
 	// automatic fd max increase if running as root
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
@@ -51,12 +51,12 @@ import (
 	"github.com/projectdiscovery/rawhttp"
 	wappalyzer "github.com/projectdiscovery/wappalyzergo"
 	"github.com/remeh/sizedwaitgroup"
-	customport "github.com/veo/vscan/pkg/httpx/common/customports"
-	fileutilz "github.com/veo/vscan/pkg/httpx/common/fileutil"
-	"github.com/veo/vscan/pkg/httpx/common/httputilz"
-	"github.com/veo/vscan/pkg/httpx/common/httpx"
-	"github.com/veo/vscan/pkg/httpx/common/slice"
-	"github.com/veo/vscan/pkg/httpx/common/stringz"
+	customport "github.com/youki992/VscanPlus/pkg/httpx/common/customports"
+	fileutilz "github.com/youki992/VscanPlus/pkg/httpx/common/fileutil"
+	"github.com/youki992/VscanPlus/pkg/httpx/common/httputilz"
+	"github.com/youki992/VscanPlus/pkg/httpx/common/httpx"
+	"github.com/youki992/VscanPlus/pkg/httpx/common/slice"
+	"github.com/youki992/VscanPlus/pkg/httpx/common/stringz"
 	"go.uber.org/ratelimit"
 )
 

@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/projectdiscovery/gologger"
-	"github.com/veo/vscan/pkg/naabu/v2/pkg/privileges"
-	"github.com/veo/vscan/pkg/naabu/v2/pkg/scan"
+	"github.com/youki992/VscanPlus/pkg/naabu/v2/pkg/privileges"
+	"github.com/youki992/VscanPlus/pkg/naabu/v2/pkg/scan"
 )
 
 const banner = `
