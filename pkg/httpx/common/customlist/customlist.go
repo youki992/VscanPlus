@@ -1,6 +1,6 @@
 package customlist
 
-import "github.com/veo/vscan/pkg/httpx/common/fileutil"
+import "github.com/youki992/VscanPlus/pkg/httpx/common/fileutil"
 
 const maxRecursion = 10
 

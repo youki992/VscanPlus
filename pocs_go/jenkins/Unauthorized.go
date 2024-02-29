@@ -2,7 +2,7 @@ package jenkins
 
 import (
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/youki992/VscanPlus/pkg"
 	"strings"
 )
 

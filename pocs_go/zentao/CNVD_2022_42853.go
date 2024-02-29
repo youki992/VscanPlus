@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/veo/vscan/pkg"
+	"github.com/youki992/VscanPlus/pkg"
 )
 
 // zentao/user-login.html SQL注入

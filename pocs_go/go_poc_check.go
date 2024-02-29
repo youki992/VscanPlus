@@ -4,28 +4,29 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/veo/vscan/brute"
-	"github.com/veo/vscan/pocs_go/Springboot"
-	"github.com/veo/vscan/pocs_go/ThinkPHP"
-	"github.com/veo/vscan/pocs_go/confluence"
-	"github.com/veo/vscan/pocs_go/f5"
-	"github.com/veo/vscan/pocs_go/fastjson"
-	"github.com/veo/vscan/pocs_go/gitlab"
-	"github.com/veo/vscan/pocs_go/jboss"
-	"github.com/veo/vscan/pocs_go/jenkins"
-	"github.com/veo/vscan/pocs_go/landray"
-	"github.com/veo/vscan/pocs_go/log4j"
-	"github.com/veo/vscan/pocs_go/mcms"
-	"github.com/veo/vscan/pocs_go/phpunit"
-	"github.com/veo/vscan/pocs_go/seeyon"
-	"github.com/veo/vscan/pocs_go/shiro"
-	"github.com/veo/vscan/pocs_go/spark"
-	"github.com/veo/vscan/pocs_go/sunlogin"
-	"github.com/veo/vscan/pocs_go/tomcat"
-	"github.com/veo/vscan/pocs_go/tongda"
-	"github.com/veo/vscan/pocs_go/weblogic"
-	"github.com/veo/vscan/pocs_go/zabbix"
-	"github.com/veo/vscan/pocs_go/zentao"
+	"github.com/youki992/VscanPlus/brute"
+	"github.com/youki992/VscanPlus/pocs_go/Springboot"
+	"github.com/youki992/VscanPlus/pocs_go/ThinkPHP"
+	"github.com/youki992/VscanPlus/pocs_go/confluence"
+	"github.com/youki992/VscanPlus/pocs_go/f5"
+	"github.com/youki992/VscanPlus/pocs_go/fastjson"
+	"github.com/youki992/VscanPlus/pocs_go/gitlab"
+	"github.com/youki992/VscanPlus/pocs_go/jboss"
+	"github.com/youki992/VscanPlus/pocs_go/jenkins"
+	"github.com/youki992/VscanPlus/pocs_go/landray"
+	"github.com/youki992/VscanPlus/pocs_go/log4j"
+	"github.com/youki992/VscanPlus/pocs_go/mcms"
+	"github.com/youki992/VscanPlus/pocs_go/phpunit"
+	"github.com/youki992/VscanPlus/pocs_go/seeyon"
+	"github.com/youki992/VscanPlus/pocs_go/shiro"
+	"github.com/youki992/VscanPlus/pocs_go/spark"
+	"github.com/youki992/VscanPlus/pocs_go/sunlogin"
+	"github.com/youki992/VscanPlus/pocs_go/tomcat"
+	"github.com/youki992/VscanPlus/pocs_go/tongda"
+	"github.com/youki992/VscanPlus/pocs_go/weblogic"
+	"github.com/youki992/VscanPlus/pocs_go/xxljob"
+	"github.com/youki992/VscanPlus/pocs_go/zabbix"
+	"github.com/youki992/VscanPlus/pocs_go/zentao"
 )
 
 func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
@@ -237,6 +238,10 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 		case "铭飞MCms":
 			if mcms.Front_Sql_inject(URL) {
 				technologies = append(technologies, "GoPOC_Mcms|Mcms_Front_Sql_inject")
+			}
+		case "xxl-job":
+			if xxljob.Default_Token_Rce(URL) {
+				technologies = append(technologies, "GoPOC_Xxljob|Xxljob_Default_Token_rce")
 			}
 		}
 		if checklog4j {

@@ -2,7 +2,7 @@ package tongda
 
 import (
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/youki992/VscanPlus/pkg"
 )
 
 //version 通达 OA V11.8 api.ali.php 任意文件上传

@@ -2,7 +2,7 @@ package brute
 
 import (
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/youki992/VscanPlus/pkg"
 )
 
 func Tomcat_brute(url string) (username string, password string) {

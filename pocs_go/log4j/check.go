@@ -2,8 +2,8 @@ package log4j
 
 import (
 	"fmt"
-	"github.com/veo/vscan/pkg"
-	"github.com/veo/vscan/pkg/jndi"
+	"github.com/youki992/VscanPlus/pkg"
+	"github.com/youki992/VscanPlus/pkg/jndi"
 	"net/url"
 	"regexp"
 	"strings"

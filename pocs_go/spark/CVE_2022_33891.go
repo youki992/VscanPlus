@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/veo/vscan/pkg"
+	"github.com/youki992/VscanPlus/pkg"
 )
 
 func CVE_2022_33891(u string) bool {

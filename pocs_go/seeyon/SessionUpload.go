@@ -3,7 +3,7 @@ package seeyon
 import (
 	"bytes"
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/youki992/VscanPlus/pkg"
 	"mime/multipart"
 	"net/textproto"
 	"regexp"

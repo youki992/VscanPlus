@@ -1,7 +1,7 @@
 package brute
 
 import (
-	"github.com/veo/vscan/pkg"
+	"github.com/youki992/VscanPlus/pkg"
 )
 
 func Basic_brute(url string) (username string, password string) {

@@ -2,7 +2,7 @@ package confluence
 
 import (
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/youki992/VscanPlus/pkg"
 )
 //author:penson 硬编码添加用户
 

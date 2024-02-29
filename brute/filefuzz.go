@@ -1,7 +1,7 @@
 package brute
 
 import (
-	"github.com/veo/vscan/pkg"
+	"github.com/youki992/VscanPlus/pkg"
 	"regexp"
 	"strings"
 	"time"
