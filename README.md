@@ -50,7 +50,7 @@ sangfor
 
 # Todo
 
-- 待修复nuclei的yaml脚本中如果带有dnslog字段{{interactsh-url}}，无法渲染成功的问题
+- 待修复部分检测脚本加载失败bug
 
 # Warning
 
