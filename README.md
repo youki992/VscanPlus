@@ -7,8 +7,8 @@
 <p align="center">
 <a href="https://github.com/youki992/VscanPlus/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat"></a>
 <a href="https://github.com/youki992/VscanPlus"><img alt="Release" src="https://img.shields.io/badge/LICENSE-BSD-important"></a>
-<a href="https://github.com/youki992/VscanPlus/releases"><img src="https://img.shields.io/github/release/veo/vscan"></a>
-<a href="https://github.com/youki992/VscanPlus/releases"><img src="https://img.shields.io/github/downloads/veo/vscan/total?color=blueviolet"></a>
+<a href="https://github.com/youki992/VscanPlus/releases"><img src="https://img.shields.io/github/release/youki992/VscanPlus"></a>
+<a href="https://github.com/youki992/VscanPlus/releases"><img src="https://img.shields.io/github/downloads/youki992/VscanPlus/total?color=blueviolet"></a>
 </p>
 
 # Features
