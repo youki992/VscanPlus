@@ -13,7 +13,9 @@
 
 # Features
 
-![image](./static/exec.png)
+![image](./static/p1.png)
+
+![image](./static/p2.png)
 
 
 # Updates
