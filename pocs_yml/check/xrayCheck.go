@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"regexp"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -22,8 +22,11 @@ import (
 
 	// "github.com/youki992/VscanPlus/pocs_yml/pkg/xray/cel"
 	"github.com/google/cel-go/cel"
+	structs2 "github.com/youki992/VscanPlus/pocs_yml/pkg/common/structs"
+	"github.com/youki992/VscanPlus/pocs_yml/pkg/xray/requests"
 	"github.com/youki992/VscanPlus/pocs_yml/pkg/xray/structs"
 	xray_structs "github.com/youki992/VscanPlus/pocs_yml/pkg/xray/structs"
+	"github.com/youki992/VscanPlus/pocs_yml/utils"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
@@ -43,6 +46,11 @@ var (
 			return make(map[string]interface{})
 		},
 	}
+	ReversePool = sync.Pool{
+		New: func() interface{} {
+			return new(structs.Reverse)
+		},
+	}
 )
 
 type Rule struct {
@@ -57,6 +65,12 @@ type RuleRequest struct {
 	Headers    map[string]string `yaml:"headers"`
 	Body       string            `yaml:"body"`
 	Expression string            `yaml:"expression"`
+}
+
+// 定义一个自定义结构体，用于存储 Reverse 结构体和 Url 字段
+type ReverseInfo struct {
+	Reverse *structs.Reverse
+	Url     *structs.UrlType
 }
 
 type RequestFuncType func(ruleName string, rule xray_structs.Rule) error
@@ -77,9 +91,24 @@ func XrayStart(target string, pocs []*xray_structs.Poc) []string {
 	// 	}
 	// }
 	variableMap := make(map[string]interface{})
+	//初始化dnslog
+	reverse := xrayNewReverse()
+	reverseInfo := ReverseInfo{
+		Reverse: reverse,
+		Url:     reverse.Url,
+	}
 	for _, poc := range pocs {
 		//解析set
 		for key, setExpression := range poc.Set {
+			if setExpression == "newReverse()" {
+				variableMap[key] = reverseInfo
+				continue
+			}
+			if setExpression == "reverse.url" {
+
+				variableMap[key] = reverseInfo.Url
+				continue
+			}
 			value, err := execSetExpression(setExpression)
 			if err == nil {
 				variableMap[key] = value
@@ -120,6 +149,15 @@ func render(v string, setMap map[string]interface{}) string {
 	return v
 }
 
+// 将 http.Header 转换为 map[string]string
+func headerToMap(header http.Header) map[string]string {
+	headerMap := make(map[string]string)
+	for key, values := range header {
+		headerMap[key] = strings.Join(values, ",")
+	}
+	return headerMap
+}
+
 var RequestsInvoke = func(target string, setMap map[string]interface{}, rule structs.Rule) bool {
 	var req *http.Request
 	var err error
@@ -153,6 +191,8 @@ var RequestsInvoke = func(target string, setMap map[string]interface{}, rule str
 	}
 	response := &structs.Response{}
 	response.Body, _ = ioutil.ReadAll(resp.Body)
+	response.Headers = headerToMap(resp.Header)
+	response.Status = int32(resp.StatusCode)
 	// re := regexp.MustCompile(`response\.status\s*==\s*(\d+)`)
 	// match := re.FindStringSubmatch(rule.Request.Expression)
 	// fmt.Println("状态码啊")
@@ -181,6 +221,10 @@ func execSetExpression(Expression string) (interface{}, error) {
 		decls.NewFunction("randomLowercase",
 			decls.NewOverload("randomLowercase_string",
 				[]*exprpb.Type{decls.Int},
+				decls.String)),
+		decls.NewFunction("newReverse()",
+			decls.NewOverload("newReverse",
+				[]*exprpb.Type{},
 				decls.String)),
 	)
 
@@ -243,16 +287,82 @@ func execSetExpression(Expression string) (interface{}, error) {
 	return out, nil
 }
 
-func execRuleExpression(Expression string, variableMap map[string]interface{}) bool {
-	re := regexp.MustCompile(`response\.body\.bcontains\(.*?\)`)
-	matches := re.FindAllString(Expression, -1)
+// xray dns反连平台 目前只支持dnslog.cn和ceye.io
+// func xrayNewReverse() (reverse *structs.Reverse) {
+// 	var (
+// 		urlStr string
+// 	)
+// 	reverse = ReversePool.Get().(*structs.Reverse)
+// 	// fmt.Println("reverse")
+// 	// fmt.Println(reverse)
+// 	switch structs2.ReversePlatformType {
+// 	case structs.ReverseType_Ceye:
+// 		sub := utils.RandomStr(utils.AsciiLowercaseAndDigits, 8)
+// 		urlStr = fmt.Sprintf("http://%s.%s/", sub, structs2.CeyeDomain)
+// 	case structs.ReverseType_DnslogCN:
+// 		dnslogCnRequest := structs2.DnslogCNGetDomainRequest
+// 		resp, _, err := requests.DoRequest(dnslogCnRequest, false)
+// 		if err != nil {
+// 			return
+// 		}
+// 		content, _ := requests.GetRespBody(resp)
+// 		urlStr = "http://" + string(content) + "/"
+// 	default:
+// 		return
+// 	}
 
-	var extractedValues []string
-	for _, match := range matches {
-		extractedValues = append(extractedValues, match)
+// 	u, _ := url.Parse(urlStr)
+
+// 	reverse.Url = requests.ParseUrl(u)
+// 	reverse.Domain = u.Hostname()
+// 	reverse.Ip = u.Host
+// 	reverse.IsDomainNameServer = false
+// 	reverse.ReverseType = structs2.ReversePlatformType
+
+//		return
+//	}
+func xrayNewReverse() *xray_structs.Reverse {
+	var urlStr string
+	switch structs2.ReversePlatformType {
+	case structs.ReverseType_Ceye:
+		sub := utils.RandomStr(utils.AsciiLowercaseAndDigits, 8)
+		urlStr = fmt.Sprintf("http://%s.%s", sub, structs2.CeyeDomain)
+	case structs.ReverseType_DnslogCN:
+		dnslogCnRequest := structs2.DnslogCNGetDomainRequest
+		resp, _, err := requests.DoRequest(dnslogCnRequest, false)
+		if err != nil {
+			wrappedErr := errors.Wrap(err, "Get reverse domain error: Can't get domain from dnslog.cn")
+			gologger.Error().Msgf("Getdnslog error: %v\n", wrappedErr)
+			return &xray_structs.Reverse{}
+		}
+		content, _ := requests.GetRespBody(resp)
+		urlStr = "http://" + string(content)
+	default:
+		return &xray_structs.Reverse{}
 	}
 
-	newExpression := strings.Join(extractedValues, " && ")
+	u, _ := url.Parse(urlStr)
+	// utils.DebugF("Get reverse domain: %s", u.Hostname())
+	gologger.Debug().Msgf("Get reverse domain: %s", u.Hostname())
+
+	return &xray_structs.Reverse{
+		Url:                requests.ParseUrl(u),
+		Domain:             u.Hostname(),
+		Ip:                 "",
+		IsDomainNameServer: false,
+		ReverseType:        structs2.ReversePlatformType,
+	}
+}
+func execRuleExpression(Expression string, variableMap map[string]interface{}) bool {
+	// re := regexp.MustCompile(`response\.body\.bcontains\(.*?\)`)
+	// matches := re.FindAllString(Expression, -1)
+
+	// var extractedValues []string
+	// for _, match := range matches {
+	// 	extractedValues = append(extractedValues, match)
+	// }
+
+	// newExpression := strings.Join(extractedValues, " && ")
 	// fmt.Println(newExpression)
 	env, _ := cel.NewEnv(
 		cel.Container("structs"),
@@ -261,6 +371,10 @@ func execRuleExpression(Expression string, variableMap map[string]interface{}) b
 			decls.NewVar("response", decls.NewObjectType("structs.Response")),
 			decls.NewFunction("bcontains",
 				decls.NewInstanceOverload("bytes_bcontains_bytes",
+					[]*exprpb.Type{decls.Bytes, decls.Bytes},
+					decls.Bool)),
+			decls.NewFunction("icontains",
+				decls.NewInstanceOverload("icontains_string",
 					[]*exprpb.Type{decls.Bytes, decls.Bytes},
 					decls.Bool)),
 		),
@@ -288,8 +402,30 @@ func execRuleExpression(Expression string, variableMap map[string]interface{}) b
 					return types.Bool(bytes.Contains(v1, v2))
 				},
 			},
+			&functions.Overload{
+				Operator: "icontains_string",
+				Binary: func(lhs ref.Val, rhs ref.Val) ref.Val {
+					v1, ok := lhs.(types.Bytes)
+					if !ok {
+						// fmt.Println()
+						return types.ValOrErr(lhs, "unexpected type '%v' passed to bcontains", lhs.Type())
+					}
+					v2, ok := rhs.(types.Bytes)
+					if !ok {
+						return types.ValOrErr(rhs, "unexpected type '%v' passed to bcontains", rhs.Type())
+					}
+					return types.Bool(strings.Contains(strings.ToLower(string(v1)), strings.ToLower(string(v2))))
+				},
+			},
+			// &functions.Overload{
+			// 	Operator: "newReverse",
+			// 	Function: func(values ...ref.Val) ref.Val {
+			// 		return ref.TypeRegistry.NativeToValue(xrayNewReverse())
+			// 		// return reg.NativeToValue(xrayNewReverse())
+			// 	},
+			// },
 		)}
-	ast, iss := env.Compile(newExpression)
+	ast, iss := env.Compile(Expression)
 	if iss.Err() != nil {
 		// log.Fatalln(iss.Err())
 	}
