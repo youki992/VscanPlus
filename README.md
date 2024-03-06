@@ -13,9 +13,9 @@
 
 # Features
 
-![image](./static/p1.png)
+![image](./static/help.png)
 
-![image](./static/p2.png)
+![image](./static/exp.png)
 
 # Updates
 
