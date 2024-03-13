@@ -68,6 +68,6 @@ sangfor
 
 https://github.com/veo/vscan
 
-## Star History
+# Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=youki992/VscanPlus&type=Date)](https://star-history.com/#youki992/VscanPlus&Date)
