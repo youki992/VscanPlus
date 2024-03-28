@@ -40,7 +40,6 @@ type RuleRequest struct {
 	Content         string            `yaml:"content"`
 	ReadTimeout     string            `yaml:"read_timeout"`
 	ConnectionID    string            `yaml:"connection_id"`
-	Expression      string            `yaml:"expression"`
 }
 
 type Infos struct {
@@ -83,19 +82,13 @@ type Payloads struct {
 }
 
 type Poc struct {
-	// Name       string       `yaml:"name"`
-	// Transport  string       `yaml:"transport"`
-	// Set        SetMapSlice  `yaml:"set"`
-	// Payloads   Payloads     `yaml:"payloads"`
-	// Rules      RuleMapSlice `yaml:"rules"`
-	// Expression string       `yaml:"expression"`
-	// Detail     Detail       `yaml:"detail"`
-	Name       string            `yaml:"name"`
-	Transport  string            `yaml:"transport"`
-	Set        map[string]string `yaml:"set"`
-	Rules      map[string]Rule   `yaml:"rules"`
-	Expression string            `yaml:"expression"`
-	Detail     Detail            `yaml:"detail"`
+	Name       string       `yaml:"name"`
+	Transport  string       `yaml:"transport"`
+	Set        SetMapSlice  `yaml:"set"`
+	Payloads   Payloads     `yaml:"payloads"`
+	Rules      RuleMapSlice `yaml:"rules"`
+	Expression string       `yaml:"expression"`
+	Detail     Detail       `yaml:"detail"`
 }
 
 func (r *Rule) UnmarshalYAML(unmarshal func(interface{}) error) error {
