@@ -11,6 +11,12 @@
 <a href="https://github.com/youki992/VscanPlus/releases"><img src="https://img.shields.io/github/downloads/youki992/VscanPlus/total?color=blueviolet"></a>
 </p>
 
+<p align="center">
+  <a href="/static/Installation.md">编译/安装/运行</a> •
+  <a href="/static/usage.md">参数说明</a> •
+  <a href="/static/running.md">使用方法</a> •
+</p>
+
 # Features
 
 ![image](./static/help.png)
