@@ -1,14 +1,14 @@
 # 参数
 
 ```sh
-vscan -h
+VscanPlus -h
 ```
 
 运行 -h 参数即可查看所有参数的描述信息
 
 ```yaml
 Usage:
-  ./vscan [flags]
+  ./VscanPlus [flags]
 
 INPUT:
    -host string[]              hosts to scan ports for (comma-separated)
