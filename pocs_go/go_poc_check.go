@@ -13,6 +13,7 @@ import (
 	"github.com/youki992/VscanPlus/pocs_go/gitlab"
 	"github.com/youki992/VscanPlus/pocs_go/jboss"
 	"github.com/youki992/VscanPlus/pocs_go/jenkins"
+	"github.com/youki992/VscanPlus/pocs_go/jinher"
 	"github.com/youki992/VscanPlus/pocs_go/landray"
 	"github.com/youki992/VscanPlus/pocs_go/log4j"
 	"github.com/youki992/VscanPlus/pocs_go/mcms"
@@ -190,7 +191,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if gitlab.CVE_2021_22205(URL) {
 				technologies = append(technologies, "GoPOC_gitlab|CVE_2021_22205")
 			}
-		case "Confluence":
+		case "Confluence", "Atlassian Confluence":
 			if confluence.CVE_2021_26084(URL) {
 				technologies = append(technologies, "GoPOC_confluence|CVE_2021_26084")
 			}
@@ -242,6 +243,10 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 		case "xxl-job":
 			if xxljob.Default_Token_Rce(URL) {
 				technologies = append(technologies, "GoPOC_Xxljob|Xxljob_Default_Token_rce")
+			}
+		case "jinher-oa", "金和oa":
+			if jinher.Sql_Check(URL) {
+				technologies = append(technologies, "GoPOC_Jinher|Jinher_Sql_Injection")
 			}
 		}
 		if checklog4j {
