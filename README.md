@@ -61,7 +61,7 @@ sangfor
     <img src="static/nuclei.png" alt="vscan" style="width: 850; display: block; margin: 0 auto;">
 </div>
 
-- 在原vscan的xray规则检测基础上，使用类似nuclei加载template的逻辑重写了yml v2的多规则检测，可以实现多表达式的检测功能
+- ~~在原vscan的xray规则检测基础上，使用类似nuclei加载template的逻辑重写了yml v2的多规则检测，可以实现多表达式的检测功能~~
 
 # Todo
 
