@@ -1,33 +1,26 @@
 package check
 
 import (
-	"bytes"
-	"crypto/tls"
 	"fmt"
-	"io/ioutil"
-	"math/rand"
+	"io"
+	"net"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/google/cel-go/checker/decls"
-	"github.com/google/cel-go/common/types"
-	"github.com/google/cel-go/common/types/ref"
-	"github.com/google/cel-go/interpreter/functions"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
+	"github.com/youki992/VscanPlus/pkg"
 
-	// "github.com/youki992/VscanPlus/pocs_yml/pkg/xray/cel"
-	"github.com/google/cel-go/cel"
-	structs2 "github.com/youki992/VscanPlus/pocs_yml/pkg/common/structs"
+	"github.com/google/cel-go/checker/decls"
+	"github.com/youki992/VscanPlus/pocs_yml/pkg/xray/cel"
 	"github.com/youki992/VscanPlus/pocs_yml/pkg/xray/requests"
-	"github.com/youki992/VscanPlus/pocs_yml/pkg/xray/structs"
 	xray_structs "github.com/youki992/VscanPlus/pocs_yml/pkg/xray/structs"
-	"github.com/youki992/VscanPlus/pocs_yml/utils"
-	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -46,455 +39,428 @@ var (
 			return make(map[string]interface{})
 		},
 	}
-	ReversePool = sync.Pool{
-		New: func() interface{} {
-			return new(structs.Reverse)
-		},
-	}
 )
-
-type Rule struct {
-	Request    RuleRequest `yaml:"request"`
-	Expression string      `yaml:"expression"`
-}
-
-type RuleRequest struct {
-	Cache      bool              `yaml:"cache"`
-	Method     string            `yaml:"method"`
-	Path       string            `yaml:"path"`
-	Headers    map[string]string `yaml:"headers"`
-	Body       string            `yaml:"body"`
-	Expression string            `yaml:"expression"`
-}
-
-// 定义一个自定义结构体，用于存储 Reverse 结构体和 Url 字段
-type ReverseInfo struct {
-	Reverse *structs.Reverse
-	Url     *structs.UrlType
-}
 
 type RequestFuncType func(ruleName string, rule xray_structs.Rule) error
 
 func XrayStart(target string, pocs []*xray_structs.Poc) []string {
 	var Vullist []string
-	// for _, poc := range pocs {
-	// 	if req, err := http.NewRequest("GET", target, nil); err == nil {
-	// 		isVul, err := executeXrayPoc(req, target, poc)
-	// 		if err != nil {
-	// 			fmt.Println("poc检测出错了")
-	// 			gologger.Error().Msgf("Execute Poc (%v) error: %v", poc.Name, err.Error())
-	// 		}
-	// 		if isVul {
-	// 			pkg.XrayPocLog(fmt.Sprintf("%s (%s)\n", target, poc.Name))
-	// 			Vullist = append(Vullist, poc.Name)
-	// 		}
-	// 	}
-	// }
-	variableMap := make(map[string]interface{})
-	//初始化dnslog
-	reverse := xrayNewReverse()
-	reverseInfo := ReverseInfo{
-		Reverse: reverse,
-		Url:     reverse.Url,
-	}
 	for _, poc := range pocs {
-		//解析set
-		for key, setExpression := range poc.Set {
-			if setExpression == "newReverse()" {
-				variableMap[key] = reverseInfo
-				continue
+		if req, err := http.NewRequest("GET", target, nil); err == nil {
+			isVul, err := executeXrayPoc(req, target, poc)
+			if err != nil {
+				gologger.Error().Msgf("Execute Poc (%v) error: %v", poc.Name, err.Error())
 			}
-			if setExpression == "reverse.url" {
-
-				variableMap[key] = reverseInfo.Url
-				continue
+			if isVul {
+				pkg.XrayPocLog(fmt.Sprintf("%s (%s)\n", target, poc.Name))
+				Vullist = append(Vullist, poc.Name)
 			}
-			value, err := execSetExpression(setExpression)
-			if err == nil {
-				variableMap[key] = value
-			} else {
-				gologger.Error().Msgf(fmt.Sprintf("set expression %s error", setExpression))
-				continue
-			}
-		}
-
-		// 检查 poc.Rules 是否为空
-		if poc.Rules == nil {
-			gologger.Error().Msgf(fmt.Sprintf("Rules are empty for POC: %s", poc.Name))
-			continue
-		}
-
-		if execPocExpression(target, variableMap, poc.Expression, poc.Rules) {
-			gologger.Info().Msgf(fmt.Sprintf("%s (%s)\n", target, poc.Name))
-			Vullist = append(Vullist, poc.Name)
 		}
 	}
 	return Vullist
 }
 
-// 渲染函数 渲染变量到request中
-func render(v string, setMap map[string]interface{}) string {
-	for k1, v1 := range setMap {
-		_, isMap := v1.(map[string]string)
-		if isMap {
-			continue
-		}
-		v1Value := fmt.Sprintf("%v", v1)
-		t := "{{" + k1 + "}}"
-		if !strings.Contains(v, t) {
-			continue
-		}
-		v = strings.ReplaceAll(v, t, v1Value)
-	}
-	return v
-}
+func executeXrayPoc(oReq *http.Request, target string, poc *xray_structs.Poc) (isVul bool, err error) {
+	isVul = false
 
-// 将 http.Header 转换为 map[string]string
-func headerToMap(header http.Header) map[string]string {
-	headerMap := make(map[string]string)
-	for key, values := range header {
-		headerMap[key] = strings.Join(values, ",")
-	}
-	return headerMap
-}
+	var (
+		milliseconds int64
+		tcpudpType   = ""
 
-var RequestsInvoke = func(target string, setMap map[string]interface{}, rule structs.Rule) bool {
-	var req *http.Request
-	var err error
-	// fmt.Println("这是setMap")
-	// fmt.Println(setMap)
-	if rule.Request.Body == "" {
-		req, err = http.NewRequest(rule.Request.Method, target+render(rule.Request.Path, setMap), nil)
+		request       *http.Request
+		response      *http.Response
+		oProtoRequest *xray_structs.Request
+		protoRequest  *xray_structs.Request
+		protoResponse *xray_structs.Response
+		variableMap   = VariableMapPool.Get().(map[string]interface{})
+		requestFunc   cel.RequestFuncType
+	)
+
+	// 异常处理
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Wrapf(r.(error), "Run Xray Poc[%s] error", poc.Name)
+			isVul = false
+		}
+	}()
+	// 回收
+	defer func() {
+		if protoRequest != nil {
+			requests.PutUrlType(protoRequest.Url)
+			requests.PutRequest(protoRequest)
+
+		}
+		if oProtoRequest != nil {
+			requests.PutUrlType(oProtoRequest.Url)
+			requests.PutRequest(oProtoRequest)
+
+		}
+		if protoResponse != nil {
+			requests.PutUrlType(protoResponse.Url)
+			if protoResponse.Conn != nil {
+				requests.PutAddrType(protoResponse.Conn.Source)
+				requests.PutAddrType(protoResponse.Conn.Destination)
+				requests.PutConnectInfo(protoResponse.Conn)
+			}
+			requests.PutResponse(protoResponse)
+		}
+
+		for _, v := range variableMap {
+			switch v.(type) {
+			case *xray_structs.Reverse:
+				cel.PutReverse(v)
+			default:
+			}
+		}
+		VariableMapPool.Put(variableMap)
+	}()
+
+	// 初始赋值
+	// 设置原始请求变量
+	oProtoRequest, _ = requests.ParseHttpRequest(oReq)
+	variableMap["request"] = oProtoRequest
+
+	// 判断transport，如果不合法则跳过
+	transport := poc.Transport
+	if transport == "tcp" || transport == "udp" {
+		if strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
+			return
+		}
 	} else {
-		req, err = http.NewRequest(rule.Request.Method, target+render(rule.Request.Path, setMap), bytes.NewBufferString(render(rule.Request.Body, setMap)))
-	}
-	// 添加请求头
-	for k, v := range setMap {
-		vStr := fmt.Sprintf("%v", v)
-		req.Header.Set(k, vStr)
-	}
-	// fmt.Println("http请求")
-	// fmt.Println(req)
-	if err != nil {
-		gologger.Error().Msgf(fmt.Sprintf("http request error: %s", err.Error()))
-		return false
-	}
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{Transport: tr}
-	resp, err := client.Do(req)
-	// resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		println(err.Error())
-		return false
-	}
-	response := &structs.Response{}
-	response.Body, _ = ioutil.ReadAll(resp.Body)
-	response.Headers = headerToMap(resp.Header)
-	response.Status = int32(resp.StatusCode)
-	// re := regexp.MustCompile(`response\.status\s*==\s*(\d+)`)
-	// match := re.FindStringSubmatch(rule.Request.Expression)
-	// fmt.Println("状态码啊")
-	// fmt.Println(match[1])
-
-	// if len(match) < 2 {
-	// 	return execRuleExpression(rule.Request.Expression, map[string]interface{}{"response": response})
-	// }
-	// if len(match) >= 2 {
-	// 	status := match[1]
-	// 	if strconv.Itoa(int(response.Status)) == status {
-	// 		return execRuleExpression(rule.Request.Expression, map[string]interface{}{"response": response})
-	// 	}
-	// }
-	// return false
-	return execRuleExpression(rule.Expression, map[string]interface{}{"response": response})
-}
-
-func execSetExpression(Expression string) (interface{}, error) {
-	//定义set 内部函数接口
-	setFuncsInterface := cel.Declarations(
-		decls.NewFunction("randomInt",
-			decls.NewOverload("randomInt_int_int",
-				[]*exprpb.Type{decls.Int, decls.Int},
-				decls.String)),
-		decls.NewFunction("randomLowercase",
-			decls.NewOverload("randomLowercase_string",
-				[]*exprpb.Type{decls.Int},
-				decls.String)),
-		decls.NewFunction("newReverse()",
-			decls.NewOverload("newReverse",
-				[]*exprpb.Type{},
-				decls.String)),
-	)
-
-	//实现set 内部函数接口
-	setFuncsImpl := cel.Functions(
-		&functions.Overload{
-			Operator: "randomInt_int_int",
-			Binary: func(lhs ref.Val, rhs ref.Val) ref.Val {
-				randSource := rand.New(rand.NewSource(time.Now().UnixNano()))
-				min := int(lhs.Value().(int64))
-				max := int(rhs.Value().(int64))
-				return types.String(strconv.Itoa(min + randSource.Intn(max-min)))
-			}},
-		&functions.Overload{
-			Operator: "randomLowercase_string",
-			Unary: func(lhs ref.Val) ref.Val {
-				n := lhs.Value().(int64)
-				letterBytes := "abcdefghijklmnopqrstuvwxyz"
-				randSource := rand.New(rand.NewSource(time.Now().UnixNano()))
-				const (
-					letterIdxBits = 6                    // 6 bits to represent a letter index
-					letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-					letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-				)
-				randBytes := make([]byte, n)
-				for i, cache, remain := n-1, randSource.Int63(), letterIdxMax; i >= 0; {
-					if remain == 0 {
-						cache, remain = randSource.Int63(), letterIdxMax
-					}
-					if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-						randBytes[i] = letterBytes[idx]
-						i--
-					}
-					cache >>= letterIdxBits
-					remain--
-				}
-				return types.String(randBytes)
-			}},
-	)
-
-	//创建set 执行环境
-	env, err := cel.NewEnv(setFuncsInterface)
-	if err != nil {
-		gologger.Error().Msgf("environment creation error: %v\n", err)
-	}
-	ast, iss := env.Compile(Expression)
-	if iss.Err() != nil {
-		// log.Fatalln(iss.Err())
-		return nil, iss.Err()
-	}
-	prg, err := env.Program(ast, setFuncsImpl)
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Program creation error: %v\n", err))
-	}
-	out, _, err := prg.Eval(map[string]interface{}{})
-	if err != nil {
-		gologger.Error().Msgf("Evaluation error: %v\n", err)
-		return nil, errors.New(fmt.Sprintf("Evaluation error: %v\n", err))
-	}
-	return out, nil
-}
-
-// xray dns反连平台 目前只支持dnslog.cn和ceye.io
-// func xrayNewReverse() (reverse *structs.Reverse) {
-// 	var (
-// 		urlStr string
-// 	)
-// 	reverse = ReversePool.Get().(*structs.Reverse)
-// 	// fmt.Println("reverse")
-// 	// fmt.Println(reverse)
-// 	switch structs2.ReversePlatformType {
-// 	case structs.ReverseType_Ceye:
-// 		sub := utils.RandomStr(utils.AsciiLowercaseAndDigits, 8)
-// 		urlStr = fmt.Sprintf("http://%s.%s/", sub, structs2.CeyeDomain)
-// 	case structs.ReverseType_DnslogCN:
-// 		dnslogCnRequest := structs2.DnslogCNGetDomainRequest
-// 		resp, _, err := requests.DoRequest(dnslogCnRequest, false)
-// 		if err != nil {
-// 			return
-// 		}
-// 		content, _ := requests.GetRespBody(resp)
-// 		urlStr = "http://" + string(content) + "/"
-// 	default:
-// 		return
-// 	}
-
-// 	u, _ := url.Parse(urlStr)
-
-// 	reverse.Url = requests.ParseUrl(u)
-// 	reverse.Domain = u.Hostname()
-// 	reverse.Ip = u.Host
-// 	reverse.IsDomainNameServer = false
-// 	reverse.ReverseType = structs2.ReversePlatformType
-
-//		return
-//	}
-func xrayNewReverse() *xray_structs.Reverse {
-	var urlStr string
-	switch structs2.ReversePlatformType {
-	case structs.ReverseType_Ceye:
-		sub := utils.RandomStr(utils.AsciiLowercaseAndDigits, 8)
-		urlStr = fmt.Sprintf("http://%s.%s", sub, structs2.CeyeDomain)
-	case structs.ReverseType_DnslogCN:
-		dnslogCnRequest := structs2.DnslogCNGetDomainRequest
-		resp, _, err := requests.DoRequest(dnslogCnRequest, false)
+		_, err = url.ParseRequestURI(target)
 		if err != nil {
-			wrappedErr := errors.Wrap(err, "Get reverse domain error: Can't get domain from dnslog.cn")
-			gologger.Error().Msgf("Getdnslog error: %v\n", wrappedErr)
-			return &xray_structs.Reverse{}
+			return
 		}
-		content, _ := requests.GetRespBody(resp)
-		urlStr = "http://" + string(content)
-	default:
-		return &xray_structs.Reverse{}
 	}
 
-	u, _ := url.Parse(urlStr)
-	// utils.DebugF("Get reverse domain: %s", u.Hostname())
-	gologger.Debug().Msgf("Get reverse domain: %s", u.Hostname())
+	// 初始化cel-go环境，并在函数返回时回收
+	c := cel.NewEnvOption()
+	defer cel.PutCustomLib(c)
 
-	return &xray_structs.Reverse{
-		Url:                requests.ParseUrl(u),
-		Domain:             u.Hostname(),
-		Ip:                 "",
-		IsDomainNameServer: false,
-		ReverseType:        structs2.ReversePlatformType,
+	env, err := cel.NewEnv(&c)
+	if err != nil {
+		return false, err
 	}
-}
-func execRuleExpression(Expression string, variableMap map[string]interface{}) bool {
-	// re := regexp.MustCompile(`response\.body\.bcontains\(.*?\)`)
-	// matches := re.FindAllString(Expression, -1)
 
-	// var extractedValues []string
-	// for _, match := range matches {
-	// 	extractedValues = append(extractedValues, match)
-	// }
+	// 请求中的全局变量
 
-	// newExpression := strings.Join(extractedValues, " && ")
-	// fmt.Println(newExpression)
-	env, _ := cel.NewEnv(
-		cel.Container("structs"),
-		cel.Types(&structs.Response{}),
-		cel.Declarations(
-			decls.NewVar("response", decls.NewObjectType("structs.Response")),
-			decls.NewFunction("bcontains",
-				decls.NewInstanceOverload("bytes_bcontains_bytes",
-					[]*exprpb.Type{decls.Bytes, decls.Bytes},
-					decls.Bool)),
-			decls.NewFunction("icontains",
-				decls.NewInstanceOverload("icontains_string",
-					[]*exprpb.Type{decls.Bytes, decls.Bytes},
-					decls.Bool)),
-		),
-	)
-	// fmt.Println("newExpression")
-	// fmt.Println(newExpression)
-	// fmt.Println("oldExpression")
-	// fmt.Println(Expression)
-	// fmt.Println("variableMap")
-	// fmt.Println(variableMap)
-	funcImpl := []cel.ProgramOption{
-		cel.Functions(
-			&functions.Overload{
-				Operator: "bytes_bcontains_bytes",
-				Binary: func(lhs ref.Val, rhs ref.Val) ref.Val {
-					v1, ok := lhs.(types.Bytes)
-					if !ok {
-						// fmt.Println()
-						return types.ValOrErr(lhs, "unexpected type '%v' passed to bcontains", lhs.Type())
+	// 定义渲染函数
+	render := func(v string) string {
+		for k1, v1 := range variableMap {
+			_, isMap := v1.(map[string]string)
+			if isMap {
+				continue
+			}
+			v1Value := fmt.Sprintf("%v", v1)
+			t := "{{" + k1 + "}}"
+			if !strings.Contains(v, t) {
+				continue
+			}
+			v = strings.ReplaceAll(v, t, v1Value)
+		}
+		return v
+	}
+	ReCreateEnv := func() error {
+		env, err = cel.NewEnv(&c)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	// 定义evaluateUpdateVariableMap
+	evaluateUpdateVariableMap := func(set yaml.MapSlice) {
+		for _, item := range set {
+			k, expression := item.Key.(string), item.Value.(string)
+			// ? 需要重新生成一遍环境，否则之前增加的变量定义不生效
+			if err := ReCreateEnv(); err != nil {
+
+			}
+
+			out, err := cel.Evaluate(env, expression, variableMap)
+			if err != nil {
+				continue
+			}
+
+			// 设置variableMap并且更新CompileOption
+			switch value := out.Value().(type) {
+			case *xray_structs.UrlType:
+				variableMap[k] = cel.UrlTypeToString(value)
+				c.UpdateCompileOption(k, cel.UrlTypeType)
+			case *xray_structs.Reverse:
+				variableMap[k] = value
+				c.UpdateCompileOption(k, cel.ReverseType)
+			case int64:
+				variableMap[k] = int(value)
+				c.UpdateCompileOption(k, decls.Int)
+			case map[string]string:
+				variableMap[k] = value
+				c.UpdateCompileOption(k, cel.StrStrMapType)
+			default:
+				variableMap[k] = value
+				c.UpdateCompileOption(k, decls.String)
+			}
+		}
+		// ? 最后再生成一遍环境，否则之前增加的变量定义不生效
+		if err := ReCreateEnv(); err != nil {
+
+		}
+	}
+
+	// 处理set
+	evaluateUpdateVariableMap(poc.Set)
+
+	// 处理payload
+	for _, setMapVal := range poc.Payloads.Payloads {
+		setMap := setMapVal.Value.(yaml.MapSlice)
+		evaluateUpdateVariableMap(setMap)
+	}
+	// 渲染detail
+	detail := &poc.Detail
+	detail.Author = render(detail.Author)
+	for k, v := range poc.Detail.Links {
+		detail.Links[k] = render(v)
+	}
+	fingerPrint := &detail.FingerPrint
+	for _, info := range fingerPrint.Infos {
+		info.ID = render(info.ID)
+		info.Name = render(info.Name)
+		info.Version = render(info.Version)
+		info.Type = render(info.Type)
+	}
+	fingerPrint.HostInfo.Hostname = render(fingerPrint.HostInfo.Hostname)
+	vulnerability := &detail.Vulnerability
+	vulnerability.ID = render(vulnerability.ID)
+	vulnerability.Match = render(vulnerability.Match)
+
+	// transport=http: request处理
+	HttpRequestInvoke := func(rule xray_structs.Rule) error {
+		var (
+			ok               bool
+			err              error
+			ruleReq          = rule.Request
+			rawHeaderBuilder strings.Builder
+		)
+
+		// 渲染请求头，请求路径和请求体
+		for k, v := range ruleReq.Headers {
+			ruleReq.Headers[k] = render(v)
+		}
+		ruleReq.Path = render(strings.TrimSpace(ruleReq.Path))
+		ruleReq.Body = render(strings.TrimSpace(ruleReq.Body))
+
+		// 尝试获取缓存
+		if request, protoRequest, protoResponse, ok = requests.XrayGetHttpRequestCache(&ruleReq); !ok || !rule.Request.Cache {
+			// 获取protoRequest
+			protoRequest, err = requests.ParseHttpRequest(oReq)
+			if err != nil {
+				return err
+			}
+
+			// 处理Path
+			if strings.HasPrefix(ruleReq.Path, "/") {
+				protoRequest.Url.Path = strings.Trim(oReq.URL.Path, "/") + "/" + ruleReq.Path[1:]
+			} else if strings.HasPrefix(ruleReq.Path, "^") {
+				protoRequest.Url.Path = "/" + ruleReq.Path[1:]
+			}
+
+			if !strings.HasPrefix(protoRequest.Url.Path, "/") {
+				protoRequest.Url.Path = "/" + protoRequest.Url.Path
+			}
+
+			// 某些poc没有区分path和query，需要处理
+			protoRequest.Url.Path = strings.ReplaceAll(protoRequest.Url.Path, " ", "%20")
+			protoRequest.Url.Path = strings.ReplaceAll(protoRequest.Url.Path, "+", "%20")
+
+			// 克隆请求对象
+			request, err = http.NewRequest(ruleReq.Method, fmt.Sprintf("%s://%s%s", protoRequest.Url.Scheme, protoRequest.Url.Host, protoRequest.Url.Path), strings.NewReader(ruleReq.Body))
+			if err != nil {
+				return err
+			}
+
+			// 处理请求头
+			request.Header = oReq.Header.Clone()
+			for k, v := range ruleReq.Headers {
+				request.Header.Set(k, v)
+				rawHeaderBuilder.WriteString(k)
+				rawHeaderBuilder.WriteString(": ")
+				rawHeaderBuilder.WriteString(v)
+				rawHeaderBuilder.WriteString("\n")
+			}
+
+			protoRequest.RawHeader = []byte(strings.Trim(rawHeaderBuilder.String(), "\n"))
+
+			// 额外处理protoRequest.Raw
+			protoRequest.Raw, _ = httputil.DumpRequestOut(request, true)
+
+			// 发起请求
+			response, milliseconds, err = requests.DoRequest(request, ruleReq.FollowRedirects)
+			if err != nil {
+				return err
+			}
+
+			// 获取protoResponse
+			protoResponse, err = requests.ParseHttpResponse(response, milliseconds)
+			if err != nil {
+				return err
+			}
+
+			// 设置缓存
+			requests.XraySetHttpRequestCache(&ruleReq, request, protoRequest, protoResponse)
+
+		} else {
+		}
+
+		return nil
+	}
+
+	// transport=tcp/udp: request处理
+	TCPUDPRequestInvoke := func(rule xray_structs.Rule) error {
+		var (
+			buffer = BodyBufPool.Get().([]byte)
+
+			content      = rule.Request.Content
+			connectionID = rule.Request.ConnectionID
+			conn         net.Conn
+			connCache    *net.Conn
+			responseRaw  []byte
+			readTimeout  int
+
+			ok  bool
+			err error
+		)
+		defer BodyBufPool.Put(buffer)
+
+		// 获取response缓存
+		if responseRaw, protoResponse, ok = requests.XrayGetTcpUdpResponseCache(rule.Request.Content); !ok || !rule.Request.Cache {
+			responseRaw = BodyPool.Get().([]byte)
+			defer BodyPool.Put(responseRaw)
+
+			// 获取connectionID缓存
+			if connCache, ok = requests.XrayGetTcpUdpConnectionCache(connectionID); !ok {
+				// 处理timeout
+				readTimeout, err = strconv.Atoi(rule.Request.ReadTimeout)
+				if err != nil {
+					return err
+				}
+
+				// 发起连接
+				conn, err = net.Dial(tcpudpType, target)
+				if err != nil {
+					return err
+				}
+
+				// 设置读取超时
+				err := conn.SetReadDeadline(time.Now().Add(time.Duration(readTimeout) * time.Second))
+				if err != nil {
+					return err
+				}
+
+				// 设置连接缓存
+				requests.XraySetTcpUdpConnectionCache(connectionID, &conn)
+			} else {
+				conn = *connCache
+			}
+
+			// 获取protoRequest
+			protoRequest, _ = requests.ParseTCPUDPRequest([]byte(content))
+
+			// 发送数据
+			_, err = conn.Write([]byte(content))
+			if err != nil {
+				return err
+			}
+
+			// 接收数据
+			for {
+				n, err := conn.Read(buffer)
+				if err != nil {
+					if err == io.EOF {
+					} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+					} else {
+						return err
 					}
-					v2, ok := rhs.(types.Bytes)
-					if !ok {
-						return types.ValOrErr(rhs, "unexpected type '%v' passed to bcontains", rhs.Type())
-					}
-					return types.Bool(bytes.Contains(v1, v2))
-				},
-			},
-			&functions.Overload{
-				Operator: "icontains_string",
-				Binary: func(lhs ref.Val, rhs ref.Val) ref.Val {
-					v1, ok := lhs.(types.Bytes)
-					if !ok {
-						// fmt.Println()
-						return types.ValOrErr(lhs, "unexpected type '%v' passed to bcontains", lhs.Type())
-					}
-					v2, ok := rhs.(types.Bytes)
-					if !ok {
-						return types.ValOrErr(rhs, "unexpected type '%v' passed to bcontains", rhs.Type())
-					}
-					return types.Bool(strings.Contains(strings.ToLower(string(v1)), strings.ToLower(string(v2))))
-				},
-			},
-			// &functions.Overload{
-			// 	Operator: "newReverse",
-			// 	Function: func(values ...ref.Val) ref.Val {
-			// 		return ref.TypeRegistry.NativeToValue(xrayNewReverse())
-			// 		// return reg.NativeToValue(xrayNewReverse())
-			// 	},
-			// },
-		)}
-	ast, iss := env.Compile(Expression)
-	if iss.Err() != nil {
-		// log.Fatalln(iss.Err())
-	}
-	prg, err := env.Program(ast, funcImpl...)
-	if err != nil {
-		gologger.Error().Msgf("Program creation error: %v\n", err)
-	}
-	out, _, err := prg.Eval(variableMap)
-	if err != nil {
-		gologger.Error().Msgf("Evaluation error: %v\n", err)
-	}
-	return out.Value().(bool)
-}
+					break
+				}
+				responseRaw = append(responseRaw, buffer[:n]...)
+			}
 
-// 将 map[string]string 转换为 map[string]interface{}
-func convertMapStringToInterface(inputMap map[string]string) map[string]interface{} {
-	outputMap := make(map[string]interface{})
-	for key, value := range inputMap {
-		outputMap[key] = value
+			// 获取protoResponse
+			protoResponse, _ = requests.ParseTCPUDPResponse(responseRaw, &conn, tcpudpType)
+
+			// 设置响应缓存
+			requests.XraySetTcpUdpResponseCache(content, responseRaw, protoResponse)
+
+		}
+		return nil
 	}
-	return outputMap
-}
-func execPocExpression(target string, setMap map[string]interface{}, Expression string, rules map[string]structs.Rule) bool {
-	var funcsInterface []*exprpb.Decl
-	var funcsImpl []*functions.Overload
-	for key, rule := range rules {
-		funcName := key
-		funcRule := rule
-		funcsInterface = append(funcsInterface, decls.NewFunction(key, decls.NewOverload(key, []*exprpb.Type{}, decls.Bool)))
-		funcsImpl = append(funcsImpl,
-			&functions.Overload{
-				Operator: funcName,
-				Function: func(values ...ref.Val) ref.Val {
-					return types.Bool(RequestsInvoke(target, convertMapStringToInterface(rule.Request.Headers), funcRule))
-				},
-			})
-		// fmt.Println("function")
-		// fmt.Println(funcName)
-		// fmt.Println("funcRule")
-		// fmt.Println(funcRule)
-		// fmt.Println(funcRule.Expression)
-		// fmt.Println("funcsInterface")
-		// fmt.Println(funcsInterface)
-		// fmt.Println("Expression")
-		// fmt.Println(Expression)
+
+	// reqeusts总处理
+	RequestInvoke := func(requestFunc cel.RequestFuncType, ruleName string, rule xray_structs.Rule) (bool, error) {
+		var (
+			flag bool
+			ok   bool
+			err  error
+		)
+		err = requestFunc(rule)
+		if err != nil {
+			return false, err
+		}
+
+		variableMap["request"] = protoRequest
+		variableMap["response"] = protoResponse
+
+		// 执行表达式
+		out, err := cel.Evaluate(env, rule.Expression, variableMap)
+
+		if err != nil {
+			return false, err
+		}
+
+		// 判断表达式结果
+		flag, ok = out.Value().(bool)
+		if !ok {
+			flag = false
+		}
+
+		// 处理output
+		evaluateUpdateVariableMap(rule.Output)
+
+		return flag, nil
 	}
-	env, err := cel.NewEnv(cel.Declarations(funcsInterface...))
+
+	// 判断transport类型，设置requestInvoke
+	if poc.Transport == "tcp" {
+		tcpudpType = "tcp"
+		requestFunc = TCPUDPRequestInvoke
+	} else if poc.Transport == "udp" {
+		tcpudpType = "udp"
+		requestFunc = TCPUDPRequestInvoke
+	} else {
+		requestFunc = HttpRequestInvoke
+	}
+
+	ruleSlice := poc.Rules
+	// 提前定义名为ruleName的函数
+	for _, ruleItem := range ruleSlice {
+		c.DefineRuleFunction(requestFunc, ruleItem.Key, ruleItem.Value, RequestInvoke)
+	}
+
+	// ? 最后再生成一遍环境，否则之前增加的变量定义不生效
+	if err := ReCreateEnv(); err != nil {
+
+	}
+
+	// 执行rule 并判断poc总体表达式结果
+	successVal, err := cel.Evaluate(env, poc.Expression, variableMap)
 	if err != nil {
-		gologger.Error().Msgf("environment creation error: %v\n", err)
+		return false, err
 	}
-	ast, iss := env.Compile(Expression)
-	if iss.Err() != nil {
-		// log.Fatalln(iss.Err())
-		gologger.Error().Msgf("Expression error: %v\n", iss.Err())
+
+	isVul, ok := successVal.Value().(bool)
+	if !ok {
+		isVul = false
 	}
-	prg, err := env.Program(ast, cel.Functions(funcsImpl...))
-	if err != nil {
-		gologger.Error().Msgf(fmt.Sprintf("Program creation error: %v\n", err))
-	}
-	// fmt.Println("evaling")
-	out, _, err := prg.Eval(map[string]interface{}{})
-	if err != nil {
-		gologger.Error().Msgf("Evaluation error: %v\n", err)
-		return false
-	}
-	if out == nil {
-		return false
-	}
-	// fmt.Println("out")
-	// fmt.Println(out)
-	return out.Value().(bool)
+
+	return isVul, nil
 }
