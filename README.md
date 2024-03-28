@@ -39,6 +39,7 @@
 泛微oa 
 用友oa
 通达oa
+金和oa
 thinphp
 spring-boot
 springblade
