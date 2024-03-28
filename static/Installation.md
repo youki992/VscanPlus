@@ -2,14 +2,14 @@
 
 ```sh
 sudo apt install -y libpcap-dev golang git
-git clone https://github.com/veo/vscan.git
-cd vscan
+git clone https://github.com/youki992/VscanPlus.git
+cd VscanPlus
 go build
 ```
 
 # 安装/运行
 
-1.在运行vscan之前，你必须先安装libpcap库
+1.在运行VscanPlus之前，你必须先安装libpcap库
 
 ```sh
 sudo apt install -y libpcap-dev
