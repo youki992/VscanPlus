@@ -244,7 +244,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if xxljob.Default_Token_Rce(URL) {
 				technologies = append(technologies, "GoPOC_Xxljob|Xxljob_Default_Token_rce")
 			}
-		case "jinher-oa", "金和oa":
+		case "金和协同管理平台":
 			if jinher.Sql_Check(URL) {
 				technologies = append(technologies, "GoPOC_Jinher|Jinher_Sql_Injection")
 			}
