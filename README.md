@@ -43,16 +43,16 @@
 
 - According to the original vscan development documentation, the xray poc naming format corresponding to the fingerprint is: fingerprint-xxxx-yml, so the format of the newly added pocs has been standardized, including:
 ``
-Weaver OA
-Yonyou OA
-Tongda OA
-Jinhe OA
+Weaver-OA
+Yonyou-OA
+Tongda-OA
+Jinhe-OA
 ThinPHP
-Spring Boot
-Spring Blade
-Apache Tomcat
+Spring-Boot
+Spring-Blade
+Apache-Tomcat
 Drupal
-Microsoft Exchange
+Microsoft-Exchange
 Sangfor
 ``
 
