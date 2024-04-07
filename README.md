@@ -12,6 +12,7 @@
 </p>
 
 <p align="center">
+  <a href="/README_zh.md">中文文档</a> •
   <a href="/static/Installation.md">Compilation/Installation/Running</a> •
   <a href="/static/usage.md">Parameter Description</a> •
   <a href="/static/running.md">Usage</a> •
