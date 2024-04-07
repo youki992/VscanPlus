@@ -2,7 +2,7 @@
   <b>VscanPlus</b>
   <br>
 </h1>
-<p align="center">二次开发版本的vscan，开源、轻量、快速、跨平台 的网站漏洞扫描工具，帮助您快速检测网站安全隐患。</p>
+<p align="center">VscanPlus is a second development version of Vscan, an open-source, lightweight, fast, cross-platform website vulnerability scanning tool that helps you quickly detect website security vulnerabilities.</p>
 
 <p align="center">
 <a href="https://github.com/youki992/VscanPlus/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat"></a>
@@ -12,9 +12,9 @@
 </p>
 
 <p align="center">
-  <a href="/static/Installation.md">编译/安装/运行</a> •
-  <a href="/static/usage.md">参数说明</a> •
-  <a href="/static/running.md">使用方法</a> •
+  <a href="/static/Installation.md">Compilation/Installation/Running</a> •
+  <a href="/static/usage.md">Parameter Description</a> •
+  <a href="/static/running.md">Usage</a> •
 </p>
 
 # Features
@@ -25,51 +25,51 @@
 
 # Updates
 
-- ehole指纹更新
-- nuclei检测脚本更新
-- xray检测脚本更新
-- 支持xray yml v2语法
-- 修复nuclei模板读取缺失字段报错
-- 规范指纹名称，nuclei、xray检测脚本命名格式
+- Updated ehole fingerprint
+- Updated nuclei detection scripts
+- Updated xray detection scripts
+- Support for xray yml v2 syntax
+- Fixed missing field error when reading nuclei templates
+- Standardized fingerprint names, nuclei, xray detection script naming format
 
 # Commits
 
-- 根据原vscan开发文档，用户可以自定义指纹和poc，两者的调用关系是：先检测指纹，再调用对应poc，类似于nuclei前不久更新的-ac命令行的检测功能，都是基于指纹来检测漏洞
+- According to the original vscan development documentation, users can customize fingerprints and pocs. The calling relationship between the two is: first detect the fingerprint, then call the corresponding poc, similar to the recently updated -ac command line detection feature in nuclei, both based on fingerprints to detect vulnerabilities
 
 <div style="text-align: center;">
     <img src="static/fingerprint.png" alt="vscan" style="width: 850; display: block; margin: 0 auto;">
 </div>
 
-- 根据原vscan开发文档，指纹对应的xray poc命名格式为：指纹-xxxx-yml，因此对新增的poc进行了格式统一，包括：
+- According to the original vscan development documentation, the xray poc naming format corresponding to the fingerprint is: fingerprint-xxxx-yml, so the format of the newly added pocs has been standardized, including:
 ``
-泛微oa 
-用友oa
-通达oa
-金和oa
-thinphp
-spring-boot
-springblade
-apache-tomcat
-drupal
-microsoft-exchange
-sangfor
+Weaver OA
+Yonyou OA
+Tongda OA
+Jinhe OA
+ThinPHP
+Spring Boot
+Spring Blade
+Apache Tomcat
+Drupal
+Microsoft Exchange
+Sangfor
 ``
 
-- nuclei则是通过tags加载poc
+- Nuclei loads pocs through tags
 
 <div style="text-align: center;">
     <img src="static/nuclei.png" alt="vscan" style="width: 850; display: block; margin: 0 auto;">
 </div>
 
-- ~~在原vscan的xray规则检测基础上，使用类似nuclei加载template的逻辑重写了yml v2的多规则检测，可以实现多表达式的检测功能~~
+- ~~Based on the xray rule detection of the original vscan, the logic of loading multiple rules in yml v2 similar to nuclei templates has been rewritten, which can achieve multi-expression detection functionality~~
 
 # Todo
 
-- 待修复部分检测脚本加载失败bug
+- Fix bugs related to some detection scripts failing to load
 
 # Warning
 
-- 如需编译生成可执行文件，请下载release中的vcsanplus-main-code.zip文件编译
+- To compile and generate executable files, please download the vcsanplus-main-code.zip file from the releases
 
 # Reference
 
