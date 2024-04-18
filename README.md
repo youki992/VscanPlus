@@ -29,7 +29,6 @@
 - Updated ehole fingerprint
 - Updated nuclei detection scripts
 - Updated xray detection scripts
-- Support for xray yml v2 syntax
 - Fixed missing field error when reading nuclei templates
 - Standardized fingerprint names, nuclei, xray detection script naming format
 
