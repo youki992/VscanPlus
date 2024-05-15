@@ -53,6 +53,7 @@ apache-tomcat
 drupal
 microsoft-exchange
 sangfor
+其他HW热门漏洞
 ``
 
 - nuclei则是通过tags加载poc
