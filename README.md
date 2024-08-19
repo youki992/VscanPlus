@@ -71,6 +71,17 @@ Sangfor
 
 - To compile and generate executable files, please download the vcsanplus-main-code.zip file from the releases
 
+**本工具由Code4th安全团队二次开发和维护**
+
+![image](https://ice.frostsky.com/2024/08/18/5559fc7abc47065e9e5e53a7dba2142b.jpeg)
+
+**团队公开群**
+- QQ群一群（772375860）
+
+**团队内部知识大陆**
+
+![image](https://ice.frostsky.com/2024/08/18/bea40903e13c5ae238926338dd3b5331.png)
+
 # Reference
 
 https://github.com/veo/vscan
