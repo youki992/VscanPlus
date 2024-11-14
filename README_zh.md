@@ -64,6 +64,12 @@ sangfor
 
 - ~~在原vscan的xray规则检测基础上，使用类似nuclei加载template的逻辑重写了yml v2的多规则检测，可以实现多表达式的检测功能~~
 
+- 新增子域名接管漏洞模糊检测功能
+
+  主要参考了https://github.com/EdOverflow/can-i-take-over-xyz项目中的检测规则，通过对比域名cname解析以及请求返回信息，判断对应域名是否存在子域名接管漏洞。检测完成后，会在当前目录下生成matched_domains.txt文件
+
+![image](https://img.picui.cn/free/2024/11/14/67356bc8eff9e.png)
+
 # Todo
 
 - 待修复部分检测脚本加载失败bug
