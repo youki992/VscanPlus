@@ -79,10 +79,6 @@ Sangfor
 - QQ群一群（772375860）（已满）
 - QQ群二群（943592766）
 
-**团队内部知识大陆**
-
-![image](https://ice.frostsky.com/2024/08/18/bea40903e13c5ae238926338dd3b5331.png)
-
 # Reference
 
 https://github.com/veo/vscan
