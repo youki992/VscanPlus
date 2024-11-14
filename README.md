@@ -63,6 +63,17 @@ Sangfor
 
 - ~~Based on the xray rule detection of the original vscan, the logic of loading multiple rules in yml v2 similar to nuclei templates has been rewritten, which can achieve multi-expression detection functionality~~
 
+- The fuzzy detection feature for subdomain name takeover vulnerabilities is added
+```
+Based on the detection rules in the https://github.com/EdOverflow/can-i-take-over-xyz project, the corresponding domain name is determined to have a subdomain name takeover vulnerability by comparing the domain name CNAME resolution and the request return information. After the detection is complete, a matched_domains.txt file is generated in the current directory.
+```
+![image](https://img.picui.cn/free/2024/11/14/67356c0dda314.png)
+
+```
+Running effects
+```
+![image](https://img.picui.cn/free/2024/11/14/67356bc8eff9e.png)
+
 # Todo
 
 - Fix bugs related to some detection scripts failing to load
@@ -76,8 +87,7 @@ Sangfor
 ![image](https://ice.frostsky.com/2024/08/18/5559fc7abc47065e9e5e53a7dba2142b.jpeg)
 
 **团队公开群**
-- QQ群一群（772375860）（已满）
-- QQ群二群（943592766）
+- QQ群一群（772375860）
 
 # Reference
 
