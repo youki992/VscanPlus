@@ -82,9 +82,9 @@ Running effects
 
 - To compile and generate executable files, please download the vcsanplus-main-code.zip file from the releases
 
-**本工具由Code4th安全团队二次开发和维护**
+**本工具由C4安全团队二次开发和维护**
 
-![image](https://ice.frostsky.com/2024/08/18/5559fc7abc47065e9e5e53a7dba2142b.jpeg)
+![image](https://img.picui.cn/free/2025/04/24/6809d1fe2c270.png)
 
 **团队公开群**
 - QQ群一群（772375860）
