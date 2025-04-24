@@ -68,6 +68,7 @@ sangfor
 
 ``
   主要参考了https://github.com/EdOverflow/can-i-take-over-xyz项目中的检测规则，通过对比域名cname解析以及请求返回信息，判断对应域名是否存在子域名接管漏洞。检测完成后，会在当前目录下生成matched_domains.txt文件
+``
 
 # Todo
 
