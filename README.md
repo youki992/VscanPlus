@@ -66,13 +66,6 @@ Sangfor
 - The fuzzy detection feature for subdomain name takeover vulnerabilities is added
 ```
 Based on the detection rules in the https://github.com/EdOverflow/can-i-take-over-xyz project, the corresponding domain name is determined to have a subdomain name takeover vulnerability by comparing the domain name CNAME resolution and the request return information. After the detection is complete, a matched_domains.txt file is generated in the current directory.
-```
-![image](https://img.picui.cn/free/2024/11/14/67356c0dda314.png)
-
-```
-Running effects
-```
-![image](https://img.picui.cn/free/2024/11/14/67356bc8eff9e.png)
 
 # Todo
 
