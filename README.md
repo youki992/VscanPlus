@@ -80,9 +80,6 @@ Based on the detection rules in the https://github.com/EdOverflow/can-i-take-ove
 
 ![image](https://img.picui.cn/free/2025/04/24/6809d1fe2c270.png)
 
-**团队公开群**
-- QQ群一群（772375860）
-
 # Reference
 
 https://github.com/veo/vscan
