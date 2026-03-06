@@ -76,28 +76,47 @@ sangfor
 
 - 待修复部分检测脚本加载失败bug
 
-# AI 决策层（Kimi）
+# AI 决策层（多模型）
 
-新增可选的 Kimi 决策辅助能力，可在扫描后自动生成一份 Markdown 决策报告（资产画像、优先级、下一步验证清单、风险控制）。
+新增可选的 AI 决策辅助能力，可在扫描后自动生成 Markdown 决策报告（资产画像、优先级、下一步验证清单、风险控制）。
+
+支持主流 OpenAI 兼容接口：`kimi / openai / deepseek / qwen / glm / openrouter / custom`
 
 - 启用 AI：`-ai-enable`
 - 仅跑 AI（不扫描）：`-ai-only`
-- Kimi Key：`-ai-api-key` 或环境变量 `KIMI_API_KEY`
+- 选择厂商：`-ai-provider kimi`
+- API Key：`-ai-api-key` 或对应环境变量
 - 额外上下文：`-ai-prompt "目标是电商业务，优先关注登录与支付面"`
 - 报告输出：`-ai-output ai-decision.md`
 
-示例：
+环境变量映射：
+
+- `kimi`: `KIMI_API_KEY` / `MOONSHOT_API_KEY`
+- `openai`: `OPENAI_API_KEY`
+- `deepseek`: `DEEPSEEK_API_KEY`
+- `qwen`: `DASHSCOPE_API_KEY`
+- `glm`: `ZHIPUAI_API_KEY`
+- `openrouter`: `OPENROUTER_API_KEY`
+
+示例（Kimi）：
 
 ```bash
 export KIMI_API_KEY="your_kimi_key"
-./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt -ai-enable -ai-output ai-decision.md
+./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt -ai-enable -ai-provider kimi -ai-output ai-decision.md
+```
+
+示例（DeepSeek）：
+
+```bash
+export DEEPSEEK_API_KEY="your_deepseek_key"
+./VscanPlus -host https://example.com -o result.txt -ai-enable -ai-provider deepseek -ai-output ai-decision.md
 ```
 
 仅根据已有输出文件生成决策：
 
 ```bash
 export KIMI_API_KEY="your_kimi_key"
-./VscanPlus -ai-enable -ai-only -o result.txt -ai-output ai-decision.md
+./VscanPlus -ai-enable -ai-only -ai-provider kimi -o result.txt -ai-output ai-decision.md
 ```
 
 # Warning

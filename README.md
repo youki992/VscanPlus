@@ -72,28 +72,47 @@ Based on the detection rules in the https://github.com/EdOverflow/can-i-take-ove
 
 - Fix bugs related to some detection scripts failing to load
 
-# AI Decision Layer (Kimi)
+# AI Decision Layer (Multi-Provider)
 
-An optional Kimi-powered decision assistant is now available. It can generate a Markdown report after scanning with asset profiling, risk priority, validation checklist, and risk control notes.
+An optional AI decision assistant is available. It generates a Markdown report after scanning with asset profiling, risk priority, validation checklist, and risk control notes.
+
+Supported OpenAI-compatible providers: `kimi / openai / deepseek / qwen / glm / openrouter / custom`
 
 - Enable AI: `-ai-enable`
-- AI only mode (skip scan): `-ai-only`
-- Kimi key: `-ai-api-key` or env `KIMI_API_KEY`
+- AI-only mode: `-ai-only`
+- Select provider: `-ai-provider kimi`
+- API key: `-ai-api-key` or provider env key
 - Extra context: `-ai-prompt "focus on auth/payment attack surface"`
 - Output file: `-ai-output ai-decision.md`
 
-Example:
+Environment variable mapping:
+
+- `kimi`: `KIMI_API_KEY` / `MOONSHOT_API_KEY`
+- `openai`: `OPENAI_API_KEY`
+- `deepseek`: `DEEPSEEK_API_KEY`
+- `qwen`: `DASHSCOPE_API_KEY`
+- `glm`: `ZHIPUAI_API_KEY`
+- `openrouter`: `OPENROUTER_API_KEY`
+
+Example (Kimi):
 
 ```bash
 export KIMI_API_KEY="your_kimi_key"
-./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt -ai-enable -ai-output ai-decision.md
+./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt -ai-enable -ai-provider kimi -ai-output ai-decision.md
+```
+
+Example (OpenAI):
+
+```bash
+export OPENAI_API_KEY="your_openai_key"
+./VscanPlus -host https://example.com -o result.txt -ai-enable -ai-provider openai -ai-output ai-decision.md
 ```
 
 AI-only with existing result file:
 
 ```bash
 export KIMI_API_KEY="your_kimi_key"
-./VscanPlus -ai-enable -ai-only -o result.txt -ai-output ai-decision.md
+./VscanPlus -ai-enable -ai-only -ai-provider kimi -o result.txt -ai-output ai-decision.md
 ```
 
 # Warning

@@ -63,6 +63,7 @@ type Options struct {
 	CeyeApi       string
 	CeyeDomain    string
 	NoPOC         bool
+	AIProvider    string
 	AIBaseURL     string
 	AIModel       string
 	AIAPIKey      string
@@ -144,11 +145,12 @@ func ParseOptions() *Options {
 	)
 
 	flagSet.CreateGroup("ai", "AI Assistant",
-		flagSet.BoolVar(&options.AIEnable, "ai-enable", false, "enable Kimi AI decision and recon assistant"),
+		flagSet.BoolVar(&options.AIEnable, "ai-enable", false, "enable AI decision and recon assistant"),
 		flagSet.BoolVar(&options.AIOnly, "ai-only", false, "run AI assistant only and skip scanning"),
-		flagSet.StringVar(&options.AIBaseURL, "ai-base-url", "https://api.moonshot.cn/v1", "Kimi API base url"),
-		flagSet.StringVar(&options.AIModel, "ai-model", "moonshot-v1-8k", "Kimi model name"),
-		flagSet.StringVar(&options.AIAPIKey, "ai-api-key", "", "Kimi API key (or use KIMI_API_KEY/MOONSHOT_API_KEY env)"),
+		flagSet.StringVar(&options.AIProvider, "ai-provider", "kimi", "ai provider preset: kimi/openai/deepseek/qwen/glm/openrouter/custom"),
+		flagSet.StringVar(&options.AIBaseURL, "ai-base-url", "", "AI API base url (auto-filled by provider preset if empty)"),
+		flagSet.StringVar(&options.AIModel, "ai-model", "", "AI model name (auto-filled by provider preset if empty)"),
+		flagSet.StringVar(&options.AIAPIKey, "ai-api-key", "", "AI API key (or use provider env keys)"),
 		flagSet.StringVar(&options.AIPrompt, "ai-prompt", "", "extra operator context for AI decision"),
 		flagSet.StringVar(&options.AIOutput, "ai-output", "ai-decision.md", "file path to write AI decision report"),
 		flagSet.IntVar(&options.AIMaxEvidence, "ai-max-evidence", 120, "max evidence lines loaded from output file"),
@@ -158,12 +160,7 @@ func ParseOptions() *Options {
 
 	// Check if stdin pipe was given
 	options.Stdin = fileutil.HasStdin()
-	if options.AIAPIKey == "" {
-		options.AIAPIKey = os.Getenv("KIMI_API_KEY")
-	}
-	if options.AIAPIKey == "" {
-		options.AIAPIKey = os.Getenv("MOONSHOT_API_KEY")
-	}
+	resolveAIProviderDefaults(options)
 
 	// Read the inputs and configure the logging
 	options.configureOutput()
@@ -205,4 +202,67 @@ func ParseOptions() *Options {
 // ShouldLoadResume resume file
 func (options *Options) ShouldLoadResume() bool {
 	return options.Resume && fileutil.FileExists(DefaultResumeFilePath())
+}
+
+func resolveAIProviderDefaults(options *Options) {
+	provider := options.AIProvider
+	if provider == "" {
+		provider = "kimi"
+	}
+
+	if options.AIBaseURL == "" {
+		switch provider {
+		case "kimi":
+			options.AIBaseURL = "https://api.moonshot.cn/v1"
+		case "openai":
+			options.AIBaseURL = "https://api.openai.com/v1"
+		case "deepseek":
+			options.AIBaseURL = "https://api.deepseek.com/v1"
+		case "qwen":
+			options.AIBaseURL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+		case "glm":
+			options.AIBaseURL = "https://open.bigmodel.cn/api/paas/v4"
+		case "openrouter":
+			options.AIBaseURL = "https://openrouter.ai/api/v1"
+		}
+	}
+
+	if options.AIModel == "" {
+		switch provider {
+		case "kimi":
+			options.AIModel = "moonshot-v1-8k"
+		case "openai":
+			options.AIModel = "gpt-4o-mini"
+		case "deepseek":
+			options.AIModel = "deepseek-chat"
+		case "qwen":
+			options.AIModel = "qwen-plus"
+		case "glm":
+			options.AIModel = "glm-4-flash"
+		case "openrouter":
+			options.AIModel = "openai/gpt-4o-mini"
+		}
+	}
+
+	if options.AIAPIKey != "" {
+		return
+	}
+
+	switch provider {
+	case "kimi":
+		options.AIAPIKey = os.Getenv("KIMI_API_KEY")
+		if options.AIAPIKey == "" {
+			options.AIAPIKey = os.Getenv("MOONSHOT_API_KEY")
+		}
+	case "openai":
+		options.AIAPIKey = os.Getenv("OPENAI_API_KEY")
+	case "deepseek":
+		options.AIAPIKey = os.Getenv("DEEPSEEK_API_KEY")
+	case "qwen":
+		options.AIAPIKey = os.Getenv("DASHSCOPE_API_KEY")
+	case "glm":
+		options.AIAPIKey = os.Getenv("ZHIPUAI_API_KEY")
+	case "openrouter":
+		options.AIAPIKey = os.Getenv("OPENROUTER_API_KEY")
+	}
 }

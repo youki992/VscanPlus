@@ -48,7 +48,7 @@ func Run(req Request) (string, error) {
 		return "", fmt.Errorf("invalid ai-base-url: %s", req.BaseURL)
 	}
 	if req.APIKey == "" {
-		return "", fmt.Errorf("missing Kimi API key: set --ai-api-key or KIMI_API_KEY")
+		return "", fmt.Errorf("missing AI API key: set --ai-api-key or provider env key")
 	}
 	if req.Model == "" {
 		req.Model = "moonshot-v1-8k"
