@@ -74,7 +74,7 @@ Based on the detection rules in the https://github.com/EdOverflow/can-i-take-ove
 
 # AI Decision Layer (Multi-Provider)
 
-An optional AI decision assistant is available. It generates a Markdown report after scanning with asset profiling, risk priority, validation checklist, and risk control notes.
+An optional AI decision assistant is available. It generates a Markdown report after scanning with asset profiling, risk priority, validation checklist, and risk control notes, plus a built-in heuristic High/Medium/Low risk summary with confidence.
 
 Supported OpenAI-compatible providers: `kimi / openai / deepseek / qwen / glm / openrouter / custom`
 

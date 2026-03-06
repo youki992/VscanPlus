@@ -78,7 +78,7 @@ sangfor
 
 # AI 决策层（多模型）
 
-新增可选的 AI 决策辅助能力，可在扫描后自动生成 Markdown 决策报告（资产画像、优先级、下一步验证清单、风险控制）。
+新增可选的 AI 决策辅助能力，可在扫描后自动生成 Markdown 决策报告（资产画像、优先级、下一步验证清单、风险控制），并内置规则引擎输出高/中/低风险与置信度摘要。
 
 支持主流 OpenAI 兼容接口：`kimi / openai / deepseek / qwen / glm / openrouter / custom`
 

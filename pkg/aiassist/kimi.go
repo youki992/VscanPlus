@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -57,20 +58,23 @@ func Run(req Request) (string, error) {
 		req.MaxEvidence = 120
 	}
 
-	evidence := loadEvidence(req.OutputFile, req.MaxEvidence)
+	evidenceLines := loadEvidenceLines(req.OutputFile, req.MaxEvidence)
+	evidence := strings.Join(evidenceLines, "\n")
+	scoring := buildRiskScoring(evidenceLines)
 	targetSummary := strings.Join(req.Targets, ",")
 	if targetSummary == "" {
 		targetSummary = "(from stdin/list or historical output)"
 	}
 
 	system := "你是授权渗透测试助手。请只给防守与授权测试建议，不提供未授权攻击步骤。输出结构必须包含：资产画像、优先级排序、下一步验证清单、风险与止损。"
-	user := fmt.Sprintf("扫描已执行: %v\n目标: %s\nhosts文件: %s\n端口参数: %s\ntop-ports: %s\n操作者补充: %s\n\n扫描证据(截断):\n%s\n\n请输出一份简洁Markdown决策报告。",
+	user := fmt.Sprintf("扫描已执行: %v\n目标: %s\nhosts文件: %s\n端口参数: %s\ntop-ports: %s\n操作者补充: %s\n\n自动风险评分摘要(规则引擎):\n%s\n\n扫描证据(截断):\n%s\n\n请输出一份简洁Markdown决策报告，且必须包含：\n1) 风险分级总览（高/中/低 + 置信度）\n2) 关键证据（引用输入证据行）\n3) 下一步验证清单（按优先级）\n4) 处置建议与风险止损。",
 		req.ScanExecuted,
 		targetSummary,
 		req.HostsFile,
 		req.Ports,
 		req.TopPorts,
 		req.Prompt,
+		scoring,
 		evidence,
 	)
 
@@ -123,13 +127,13 @@ func SaveReport(path, content string) error {
 	return os.WriteFile(path, []byte(content), 0644)
 }
 
-func loadEvidence(path string, maxLines int) string {
+func loadEvidenceLines(path string, maxLines int) []string {
 	if path == "" {
-		return "(no output file configured)"
+		return []string{"(no output file configured)"}
 	}
 	f, err := os.Open(path)
 	if err != nil {
-		return fmt.Sprintf("(cannot read %s: %v)", path, err)
+		return []string{fmt.Sprintf("(cannot read %s: %v)", path, err)}
 	}
 	defer f.Close()
 
@@ -142,7 +146,48 @@ func loadEvidence(path string, maxLines int) string {
 		}
 	}
 	if len(lines) == 0 {
-		return "(output file has no lines yet)"
+		return []string{"(output file has no lines yet)"}
 	}
-	return strings.Join(lines, "\n")
+	return lines
+}
+
+func buildRiskScoring(lines []string) string {
+	highPorts := map[int]struct{}{22: {}, 3389: {}, 445: {}, 6379: {}, 27017: {}, 9200: {}, 11211: {}, 2375: {}, 5432: {}, 3306: {}}
+	mediumPorts := map[int]struct{}{8080: {}, 8443: {}, 8000: {}, 8888: {}, 7001: {}, 7002: {}, 5000: {}, 9090: {}}
+
+	high, medium, low := 0, 0, 0
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		parts := strings.Split(line, ":")
+		if len(parts) < 2 {
+			continue
+		}
+		portStr := parts[len(parts)-1]
+		port, err := strconv.Atoi(portStr)
+		if err != nil {
+			continue
+		}
+		if _, ok := highPorts[port]; ok {
+			high++
+			continue
+		}
+		if _, ok := mediumPorts[port]; ok {
+			medium++
+			continue
+		}
+		if port == 80 || port == 443 {
+			low++
+			continue
+		}
+		medium++
+	}
+	total := high + medium + low
+	if total == 0 {
+		return "- High: 0 (confidence: 0%)\n- Medium: 0 (confidence: 0%)\n- Low: 0 (confidence: 0%)"
+	}
+	conf := func(v int) int { return int(float64(v) / float64(total) * 100) }
+	return fmt.Sprintf("- High: %d (confidence: %d%%)\n- Medium: %d (confidence: %d%%)\n- Low: %d (confidence: %d%%)", high, conf(high), medium, conf(medium), low, conf(low))
 }
