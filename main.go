@@ -34,6 +34,11 @@ func main() {
 	}
 
 	if options.AIEnable {
+		evidenceFile := options.Output
+		if scanExecuted && options.Output != "" {
+			evidenceFile = "port." + options.Output
+		}
+
 		report, err := aiassist.Run(aiassist.Request{
 			BaseURL:      options.AIBaseURL,
 			APIKey:       options.AIAPIKey,
@@ -42,7 +47,7 @@ func main() {
 			HostsFile:    options.HostsFile,
 			Ports:        options.Ports,
 			TopPorts:     options.TopPorts,
-			OutputFile:   options.Output,
+			OutputFile:   evidenceFile,
 			Prompt:       options.AIPrompt,
 			MaxEvidence:  options.AIMaxEvidence,
 			ScanExecuted: scanExecuted,
