@@ -72,6 +72,30 @@ Based on the detection rules in the https://github.com/EdOverflow/can-i-take-ove
 
 - Fix bugs related to some detection scripts failing to load
 
+# AI Decision Layer (Kimi)
+
+An optional Kimi-powered decision assistant is now available. It can generate a Markdown report after scanning with asset profiling, risk priority, validation checklist, and risk control notes.
+
+- Enable AI: `-ai-enable`
+- AI only mode (skip scan): `-ai-only`
+- Kimi key: `-ai-api-key` or env `KIMI_API_KEY`
+- Extra context: `-ai-prompt "focus on auth/payment attack surface"`
+- Output file: `-ai-output ai-decision.md`
+
+Example:
+
+```bash
+export KIMI_API_KEY="your_kimi_key"
+./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt -ai-enable -ai-output ai-decision.md
+```
+
+AI-only with existing result file:
+
+```bash
+export KIMI_API_KEY="your_kimi_key"
+./VscanPlus -ai-enable -ai-only -o result.txt -ai-output ai-decision.md
+```
+
 # Warning
 
 - To compile and generate executable files, please download the vcsanplus-main-code.zip file from the releases

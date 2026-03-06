@@ -76,6 +76,30 @@ sangfor
 
 - 待修复部分检测脚本加载失败bug
 
+# AI 决策层（Kimi）
+
+新增可选的 Kimi 决策辅助能力，可在扫描后自动生成一份 Markdown 决策报告（资产画像、优先级、下一步验证清单、风险控制）。
+
+- 启用 AI：`-ai-enable`
+- 仅跑 AI（不扫描）：`-ai-only`
+- Kimi Key：`-ai-api-key` 或环境变量 `KIMI_API_KEY`
+- 额外上下文：`-ai-prompt "目标是电商业务，优先关注登录与支付面"`
+- 报告输出：`-ai-output ai-decision.md`
+
+示例：
+
+```bash
+export KIMI_API_KEY="your_kimi_key"
+./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt -ai-enable -ai-output ai-decision.md
+```
+
+仅根据已有输出文件生成决策：
+
+```bash
+export KIMI_API_KEY="your_kimi_key"
+./VscanPlus -ai-enable -ai-only -o result.txt -ai-output ai-decision.md
+```
+
 # Warning
 
 - 如需编译生成可执行文件，请下载release中的vcsanplus-main-code.zip或vscanplus-code.zip文件编译

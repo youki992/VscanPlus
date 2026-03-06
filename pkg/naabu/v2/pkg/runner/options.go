@@ -25,6 +25,8 @@ type Options struct {
 	ExcludeCDN     bool // Excludes ip of knows CDN ranges for full port scan
 	Nmap           bool // Invoke nmap detailed scan on results
 	InterfacesList bool // InterfacesList show interfaces list
+	AIEnable       bool // Enable Kimi AI assistant for decision support
+	AIOnly         bool // Run AI assistant only (skip scan)
 
 	Retries           int                           // Retries is the number of retries for the port
 	Rate              int                           // Rate is the rate of port scan requests
@@ -58,9 +60,15 @@ type Options struct {
 	Stream            bool
 	Passive           bool
 	//
-	CeyeApi    string
-	CeyeDomain string
-	NoPOC      bool
+	CeyeApi       string
+	CeyeDomain    string
+	NoPOC         bool
+	AIBaseURL     string
+	AIModel       string
+	AIAPIKey      string
+	AIPrompt      string
+	AIOutput      string
+	AIMaxEvidence int
 }
 
 // OnResultCallback (hostname, ip, ports)
@@ -135,10 +143,27 @@ func ParseOptions() *Options {
 		flagSet.IntVarP(&options.StatsInterval, "stats-interval", "si", DefautStatsInterval, "number of seconds to wait between showing a statistics update"),
 	)
 
+	flagSet.CreateGroup("ai", "AI Assistant",
+		flagSet.BoolVar(&options.AIEnable, "ai-enable", false, "enable Kimi AI decision and recon assistant"),
+		flagSet.BoolVar(&options.AIOnly, "ai-only", false, "run AI assistant only and skip scanning"),
+		flagSet.StringVar(&options.AIBaseURL, "ai-base-url", "https://api.moonshot.cn/v1", "Kimi API base url"),
+		flagSet.StringVar(&options.AIModel, "ai-model", "moonshot-v1-8k", "Kimi model name"),
+		flagSet.StringVar(&options.AIAPIKey, "ai-api-key", "", "Kimi API key (or use KIMI_API_KEY/MOONSHOT_API_KEY env)"),
+		flagSet.StringVar(&options.AIPrompt, "ai-prompt", "", "extra operator context for AI decision"),
+		flagSet.StringVar(&options.AIOutput, "ai-output", "ai-decision.md", "file path to write AI decision report"),
+		flagSet.IntVar(&options.AIMaxEvidence, "ai-max-evidence", 120, "max evidence lines loaded from output file"),
+	)
+
 	_ = flagSet.Parse()
 
 	// Check if stdin pipe was given
 	options.Stdin = fileutil.HasStdin()
+	if options.AIAPIKey == "" {
+		options.AIAPIKey = os.Getenv("KIMI_API_KEY")
+	}
+	if options.AIAPIKey == "" {
+		options.AIAPIKey = os.Getenv("MOONSHOT_API_KEY")
+	}
 
 	// Read the inputs and configure the logging
 	options.configureOutput()
