@@ -219,6 +219,9 @@ func New(options *Options) (*Runner, error) {
 	scanopts.AIModel = options.AIModel
 	scanopts.AIAPIKey = options.AIAPIKey
 	scanopts.AIPrompt = options.AIPrompt
+	scanopts.NucleiExternal = options.NucleiExternal
+	scanopts.NucleiBin = options.NucleiBin
+	scanopts.NucleiTemplate = options.NucleiTemplate
 	scanopts.OutputIP = options.OutputIP
 	scanopts.OutputCName = options.OutputCName
 	scanopts.OutputCDN = options.OutputCDN
@@ -1305,7 +1308,30 @@ retry:
 				pocYmlList1 := pocs_yml.XrayCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) // 通过wFingerprint获取到的指纹进行ymlpoc check
 				Vullist = append(Vullist, pocYmlList1...)
 			}
-			pocNuclei1 := pocs_yml.NucleiCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, sliceToLower(technologies))
+			selectedNucleiTags := sliceToLower(technologies)
+			if scanopts.AIPOCSelect && scanopts.AIAPIKey != "" {
+				candidateTags := pocs_yml.ListNucleiTags()
+				aiTags, err := aiassist.SelectNucleiTags(aiassist.NucleiSelectRequest{
+					BaseURL:    scanopts.AIBaseURL,
+					APIKey:     scanopts.AIAPIKey,
+					Model:      scanopts.AIModel,
+					Prompt:     scanopts.AIPrompt,
+					TargetURL:  ul,
+					Title:      title,
+					Server:     resp.GetHeaderPart("Server", ";"),
+					Techs:      selectedNucleiTags,
+					Candidates: candidateTags,
+					MaxSelect:  12,
+				})
+				if err != nil {
+					gologger.Debug().Msgf("AI nuclei tag select failed for %s: %s", ul, err)
+				} else if len(aiTags) > 0 {
+					selectedNucleiTags = append(selectedNucleiTags, aiTags...)
+					selectedNucleiTags = sliceToLower(selectedNucleiTags)
+				}
+			}
+
+			pocNuclei1 := pocs_yml.NucleiCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, selectedNucleiTags, scanopts.NucleiExternal, scanopts.NucleiBin, scanopts.NucleiTemplate)
 			Vullist = append(Vullist, pocNuclei1...)
 			filePaths, filefuzzTechnologies = brute.FileFuzz(ul, resp.StatusCode, resp.ContentLength, resp.Raw) // 敏感文件扫描
 			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)
@@ -1317,7 +1343,7 @@ retry:
 				pocYmlList2 := pocs_yml.XrayCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) //通过敏感文件扫描获取到的指纹进行检测ymlpoc check
 				Vullist = append(Vullist, pocYmlList2...)
 			}
-			pocNuclei2 := pocs_yml.NucleiCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, sliceToLower(filefuzzTechnologies))
+			pocNuclei2 := pocs_yml.NucleiCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, sliceToLower(filefuzzTechnologies), scanopts.NucleiExternal, scanopts.NucleiBin, scanopts.NucleiTemplate)
 			Vullist = append(Vullist, pocNuclei2...)
 
 			if scanopts.AIPOCSelect && scanopts.AIAPIKey != "" {

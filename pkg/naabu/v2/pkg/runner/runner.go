@@ -69,6 +69,9 @@ func (r *Runner) Httpxrun() error {
 	httpxoptions.AIModel = r.options.AIModel
 	httpxoptions.AIAPIKey = r.options.AIAPIKey
 	httpxoptions.AIPrompt = r.options.AIPrompt
+	httpxoptions.NucleiExternal = r.options.NucleiExternal
+	httpxoptions.NucleiBin = r.options.NucleiBin
+	httpxoptions.NucleiTemplate = r.options.NucleiTemplate
 	pkg.CeyeApi = r.options.CeyeApi
 	pkg.CeyeDomain = r.options.CeyeDomain
 	pkg.HttpProxy = r.options.Proxy
