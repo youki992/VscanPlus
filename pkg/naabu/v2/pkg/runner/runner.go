@@ -72,6 +72,7 @@ func (r *Runner) Httpxrun() error {
 	httpxoptions.NucleiExternal = r.options.NucleiExternal
 	httpxoptions.NucleiBin = r.options.NucleiBin
 	httpxoptions.NucleiTemplate = r.options.NucleiTemplate
+	httpxoptions.NucleiUpdate = r.options.NucleiUpdate
 	pkg.CeyeApi = r.options.CeyeApi
 	pkg.CeyeDomain = r.options.CeyeDomain
 	pkg.HttpProxy = r.options.Proxy

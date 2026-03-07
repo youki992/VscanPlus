@@ -83,6 +83,7 @@ Supported OpenAI-compatible providers: `kimi / openai / deepseek / qwen / glm / 
 - AI-only mode: `-ai-only`
 - Enable AI POC selection (xray+nuclei): `-ai-poc-select`
 - Use external latest nuclei engine: `-nuclei-external -nuclei-templates /path/to/nuclei-templates`
+- Auto update templates before scan: `-nuclei-update`
 - Select provider: `-ai-provider kimi`
 - API key: `-ai-api-key` or provider env key
 - Extra context: `-ai-prompt "focus on auth/payment attack surface"`

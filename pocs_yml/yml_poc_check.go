@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/projectdiscovery/gologger"
@@ -23,6 +24,8 @@ var XrayPocs embed.FS
 
 //go:embed nucleiFiles
 var NucleiPocs embed.FS
+
+var nucleiTemplateUpdateOnce sync.Once
 
 func XrayCheck(target string, ceyeapi string, ceyedomain string, proxy string, pocname string) []string {
 	common_structs.InitReversePlatform(ceyeapi, ceyedomain)
@@ -43,9 +46,9 @@ func XrayCheck(target string, ceyeapi string, ceyedomain string, proxy string, p
 	return check.XrayStart(target, xrayPocs)
 }
 
-func NucleiCheck(target string, ceyeapi string, ceyedomain string, proxy string, Tags []string, useExternal bool, nucleiBin string, nucleiTemplates string) []string {
+func NucleiCheck(target string, ceyeapi string, ceyedomain string, proxy string, Tags []string, useExternal bool, nucleiBin string, nucleiTemplates string, nucleiUpdate bool) []string {
 	if useExternal && nucleiTemplates != "" {
-		out := NucleiCheckExternal(target, Tags, nucleiBin, nucleiTemplates)
+		out := NucleiCheckExternal(target, Tags, nucleiBin, nucleiTemplates, nucleiUpdate)
 		if len(out) > 0 {
 			return out
 		}
@@ -116,10 +119,22 @@ func ListNucleiTags() []string {
 	return out
 }
 
-func NucleiCheckExternal(target string, tags []string, nucleiBin string, nucleiTemplates string) []string {
+func NucleiCheckExternal(target string, tags []string, nucleiBin string, nucleiTemplates string, nucleiUpdate bool) []string {
 	if nucleiBin == "" {
 		nucleiBin = "nuclei"
 	}
+
+	if nucleiUpdate {
+		nucleiTemplateUpdateOnce.Do(func() {
+			updateCmd := exec.Command(nucleiBin, "-update-templates")
+			if out, err := updateCmd.CombinedOutput(); err != nil {
+				gologger.Debug().Msgf("nuclei template update failed: %s, output=%s", err, strings.TrimSpace(string(out)))
+			} else {
+				gologger.Info().Msg("nuclei templates updated")
+			}
+		})
+	}
+
 	args := []string{"-u", target, "-t", nucleiTemplates, "-silent"}
 	if len(tags) > 0 {
 		args = append(args, "-tags", strings.Join(tags, ","))

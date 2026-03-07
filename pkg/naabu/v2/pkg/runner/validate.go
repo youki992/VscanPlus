@@ -98,6 +98,10 @@ func (options *Options) validateOptions() error {
 		return errors.New("verify not supported in stream active mode")
 	}
 
+	if options.NucleiExternal && options.NucleiTemplate == "" {
+		return errors.New("nuclei-external requires -nuclei-templates")
+	}
+
 	return nil
 }
 

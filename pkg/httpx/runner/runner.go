@@ -222,6 +222,7 @@ func New(options *Options) (*Runner, error) {
 	scanopts.NucleiExternal = options.NucleiExternal
 	scanopts.NucleiBin = options.NucleiBin
 	scanopts.NucleiTemplate = options.NucleiTemplate
+	scanopts.NucleiUpdate = options.NucleiUpdate
 	scanopts.OutputIP = options.OutputIP
 	scanopts.OutputCName = options.OutputCName
 	scanopts.OutputCDN = options.OutputCDN
@@ -1331,7 +1332,7 @@ retry:
 				}
 			}
 
-			pocNuclei1 := pocs_yml.NucleiCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, selectedNucleiTags, scanopts.NucleiExternal, scanopts.NucleiBin, scanopts.NucleiTemplate)
+			pocNuclei1 := pocs_yml.NucleiCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, selectedNucleiTags, scanopts.NucleiExternal, scanopts.NucleiBin, scanopts.NucleiTemplate, scanopts.NucleiUpdate)
 			Vullist = append(Vullist, pocNuclei1...)
 			filePaths, filefuzzTechnologies = brute.FileFuzz(ul, resp.StatusCode, resp.ContentLength, resp.Raw) // 敏感文件扫描
 			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)
@@ -1343,7 +1344,7 @@ retry:
 				pocYmlList2 := pocs_yml.XrayCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) //通过敏感文件扫描获取到的指纹进行检测ymlpoc check
 				Vullist = append(Vullist, pocYmlList2...)
 			}
-			pocNuclei2 := pocs_yml.NucleiCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, sliceToLower(filefuzzTechnologies), scanopts.NucleiExternal, scanopts.NucleiBin, scanopts.NucleiTemplate)
+			pocNuclei2 := pocs_yml.NucleiCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, sliceToLower(filefuzzTechnologies), scanopts.NucleiExternal, scanopts.NucleiBin, scanopts.NucleiTemplate, scanopts.NucleiUpdate)
 			Vullist = append(Vullist, pocNuclei2...)
 
 			if scanopts.AIPOCSelect && scanopts.AIAPIKey != "" {

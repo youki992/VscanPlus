@@ -32,6 +32,7 @@ type Options struct {
 	NucleiExternal bool // Use external nuclei binary for latest template compatibility
 	NucleiBin      string // External nuclei binary path
 	NucleiTemplate string // External nuclei templates directory
+	NucleiUpdate   bool   // Update nuclei templates before scan
 
 	Retries           int                           // Retries is the number of retries for the port
 	Rate              int                           // Rate is the rate of port scan requests
@@ -157,6 +158,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.NucleiExternal, "nuclei-external", false, "use external nuclei binary for latest template compatibility"),
 		flagSet.StringVar(&options.NucleiBin, "nuclei-bin", "nuclei", "external nuclei binary path"),
 		flagSet.StringVar(&options.NucleiTemplate, "nuclei-templates", "", "external nuclei templates directory (required with -nuclei-external)"),
+		flagSet.BoolVar(&options.NucleiUpdate, "nuclei-update", false, "auto update nuclei templates before external nuclei checks"),
 		flagSet.StringVar(&options.AIProvider, "ai-provider", "kimi", "ai provider preset: kimi/openai/deepseek/qwen/glm/openrouter/custom"),
 		flagSet.StringVar(&options.AIBaseURL, "ai-base-url", "", "AI API base url (auto-filled by provider preset if empty)"),
 		flagSet.StringVar(&options.AIModel, "ai-model", "", "AI model name (auto-filled by provider preset if empty)"),

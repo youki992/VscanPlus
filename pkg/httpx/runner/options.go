@@ -84,6 +84,7 @@ type scanOptions struct {
 	NucleiExternal bool
 	NucleiBin      string
 	NucleiTemplate string
+	NucleiUpdate   bool
 }
 
 func (s *scanOptions) Clone() *scanOptions {
@@ -139,6 +140,7 @@ func (s *scanOptions) Clone() *scanOptions {
 		NucleiExternal:            s.NucleiExternal,
 		NucleiBin:                 s.NucleiBin,
 		NucleiTemplate:            s.NucleiTemplate,
+		NucleiUpdate:              s.NucleiUpdate,
 	}
 }
 
@@ -264,6 +266,7 @@ type Options struct {
 	NucleiExternal bool
 	NucleiBin      string
 	NucleiTemplate string
+	NucleiUpdate   bool
 }
 
 // ParseOptions parses the command line options for application
