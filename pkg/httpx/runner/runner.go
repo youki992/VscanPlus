@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/youki992/VscanPlus/brute"
+	"github.com/youki992/VscanPlus/pkg/aiassist"
 	"github.com/youki992/VscanPlus/pkg/fingerprint"
 	"github.com/youki992/VscanPlus/pocs_go"
 	"github.com/youki992/VscanPlus/pocs_yml"
@@ -213,6 +214,11 @@ func New(options *Options) (*Runner, error) {
 	scanopts.NoPOC = options.NoPOC
 	scanopts.CeyeApi = options.CeyeApi
 	scanopts.CeyeDomain = options.CeyeDomain
+	scanopts.AIPOCSelect = options.AIPOCSelect
+	scanopts.AIBaseURL = options.AIBaseURL
+	scanopts.AIModel = options.AIModel
+	scanopts.AIAPIKey = options.AIAPIKey
+	scanopts.AIPrompt = options.AIPrompt
 	scanopts.OutputIP = options.OutputIP
 	scanopts.OutputCName = options.OutputCName
 	scanopts.OutputCDN = options.OutputCDN
@@ -1313,6 +1319,33 @@ retry:
 			}
 			pocNuclei2 := pocs_yml.NucleiCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, sliceToLower(filefuzzTechnologies))
 			Vullist = append(Vullist, pocNuclei2...)
+
+			if scanopts.AIPOCSelect && scanopts.AIAPIKey != "" {
+				candidatePrefixes := pocs_yml.ListXrayPocPrefixes()
+				mergedTech := append([]string{}, technologies...)
+				mergedTech = append(mergedTech, filefuzzTechnologies...)
+				selectedPrefixes, err := aiassist.SelectXrayPocPrefixes(aiassist.PocSelectRequest{
+					BaseURL:    scanopts.AIBaseURL,
+					APIKey:     scanopts.AIAPIKey,
+					Model:      scanopts.AIModel,
+					Prompt:     scanopts.AIPrompt,
+					TargetURL:  ul,
+					Title:      title,
+					Server:     resp.GetHeaderPart("Server", ";"),
+					Techs:      sliceToLower(mergedTech),
+					Candidates: candidatePrefixes,
+					MaxSelect:  8,
+				})
+				if err != nil {
+					gologger.Debug().Msgf("AI poc select failed for %s: %s", ul, err)
+				} else {
+					for _, prefix := range selectedPrefixes {
+						pocYmlListAI := pocs_yml.XrayCheck(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, prefix)
+						Vullist = append(Vullist, pocYmlListAI...)
+					}
+				}
+			}
+
 			technologies = append(technologies, filefuzzTechnologies...) // 输出加入敏感文件扫描 获取到的指纹
 			technologies = SliceRemoveDuplicates(technologies)           // 指纹去重
 		}

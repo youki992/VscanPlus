@@ -80,6 +80,7 @@ Supported OpenAI-compatible providers: `kimi / openai / deepseek / qwen / glm / 
 
 - Enable AI: `-ai-enable`
 - AI-only mode: `-ai-only`
+- Enable AI POC selection: `-ai-poc-select`
 - Select provider: `-ai-provider kimi`
 - API key: `-ai-api-key` or provider env key
 - Extra context: `-ai-prompt "focus on auth/payment attack surface"`

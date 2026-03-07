@@ -84,6 +84,7 @@ sangfor
 
 - 启用 AI：`-ai-enable`
 - 仅跑 AI（不扫描）：`-ai-only`
+- 启用 AI 选 POC：`-ai-poc-select`
 - 选择厂商：`-ai-provider kimi`
 - API Key：`-ai-api-key` 或对应环境变量
 - 额外上下文：`-ai-prompt "目标是电商业务，优先关注登录与支付面"`

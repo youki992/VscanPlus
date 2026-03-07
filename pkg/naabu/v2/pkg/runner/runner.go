@@ -64,6 +64,11 @@ func (r *Runner) Httpxrun() error {
 	httpxoptions.NoPOC = r.options.NoPOC
 	httpxoptions.CeyeApi = r.options.CeyeApi
 	httpxoptions.CeyeDomain = r.options.CeyeDomain
+	httpxoptions.AIPOCSelect = r.options.AIPOCSelect
+	httpxoptions.AIBaseURL = r.options.AIBaseURL
+	httpxoptions.AIModel = r.options.AIModel
+	httpxoptions.AIAPIKey = r.options.AIAPIKey
+	httpxoptions.AIPrompt = r.options.AIPrompt
 	pkg.CeyeApi = r.options.CeyeApi
 	pkg.CeyeDomain = r.options.CeyeDomain
 	pkg.HttpProxy = r.options.Proxy

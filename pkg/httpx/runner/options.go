@@ -73,9 +73,14 @@ type scanOptions struct {
 	OutputWordsCount          bool
 	Hashes                    string
 	//
-	CeyeApi    string
-	CeyeDomain string
-	NoPOC      bool
+	CeyeApi     string
+	CeyeDomain  string
+	NoPOC       bool
+	AIPOCSelect bool
+	AIBaseURL   string
+	AIModel     string
+	AIAPIKey    string
+	AIPrompt    string
 }
 
 func (s *scanOptions) Clone() *scanOptions {
@@ -120,6 +125,14 @@ func (s *scanOptions) Clone() *scanOptions {
 		OutputLinesCount:          s.OutputLinesCount,
 		OutputWordsCount:          s.OutputWordsCount,
 		Hashes:                    s.Hashes,
+		CeyeApi:                   s.CeyeApi,
+		CeyeDomain:                s.CeyeDomain,
+		NoPOC:                     s.NoPOC,
+		AIPOCSelect:               s.AIPOCSelect,
+		AIBaseURL:                 s.AIBaseURL,
+		AIModel:                   s.AIModel,
+		AIAPIKey:                  s.AIAPIKey,
+		AIPrompt:                  s.AIPrompt,
 	}
 }
 
@@ -234,9 +247,14 @@ type Options struct {
 	Jarm                      bool
 	Asn                       bool
 	//
-	CeyeApi    string
-	CeyeDomain string
-	NoPOC      bool
+	CeyeApi     string
+	CeyeDomain  string
+	NoPOC       bool
+	AIPOCSelect bool
+	AIBaseURL   string
+	AIModel     string
+	AIAPIKey    string
+	AIPrompt    string
 }
 
 // ParseOptions parses the command line options for application

@@ -78,8 +78,16 @@ func Run(req Request) (string, error) {
 		evidence,
 	)
 
+	return runChat(req.BaseURL, req.APIKey, req.Model, system, user)
+}
+
+func SaveReport(path, content string) error {
+	return os.WriteFile(path, []byte(content), 0644)
+}
+
+func runChat(baseURL, apiKey, model, system, user string) (string, error) {
 	body, err := json.Marshal(chatRequest{
-		Model: req.Model,
+		Model: model,
 		Messages: []chatMessage{
 			{Role: "system", Content: system},
 			{Role: "user", Content: user},
@@ -90,12 +98,12 @@ func Run(req Request) (string, error) {
 		return "", err
 	}
 
-	endpoint := strings.TrimRight(req.BaseURL, "/") + "/chat/completions"
+	endpoint := strings.TrimRight(baseURL, "/") + "/chat/completions"
 	httpReq, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
 		return "", err
 	}
-	httpReq.Header.Set("Authorization", "Bearer "+req.APIKey)
+	httpReq.Header.Set("Authorization", "Bearer "+apiKey)
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{Timeout: 90 * time.Second}
@@ -110,7 +118,7 @@ func Run(req Request) (string, error) {
 		return "", err
 	}
 	if resp.StatusCode >= 300 {
-		return "", fmt.Errorf("kimi api failed: %s %s", resp.Status, string(respBody))
+		return "", fmt.Errorf("ai api failed: %s %s", resp.Status, string(respBody))
 	}
 
 	var parsed chatResponse
@@ -118,13 +126,9 @@ func Run(req Request) (string, error) {
 		return "", err
 	}
 	if len(parsed.Choices) == 0 || parsed.Choices[0].Message.Content == "" {
-		return "", fmt.Errorf("empty kimi response")
+		return "", fmt.Errorf("empty ai response")
 	}
 	return parsed.Choices[0].Message.Content, nil
-}
-
-func SaveReport(path, content string) error {
-	return os.WriteFile(path, []byte(content), 0644)
 }
 
 func loadEvidenceLines(path string, maxLines int) []string {

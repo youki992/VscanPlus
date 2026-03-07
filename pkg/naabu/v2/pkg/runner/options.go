@@ -27,6 +27,7 @@ type Options struct {
 	InterfacesList bool // InterfacesList show interfaces list
 	AIEnable       bool // Enable Kimi AI assistant for decision support
 	AIOnly         bool // Run AI assistant only (skip scan)
+	AIPOCSelect    bool // Enable AI-driven xray POC prefix selection
 
 	Retries           int                           // Retries is the number of retries for the port
 	Rate              int                           // Rate is the rate of port scan requests
@@ -147,6 +148,7 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("ai", "AI Assistant",
 		flagSet.BoolVar(&options.AIEnable, "ai-enable", false, "enable AI decision and recon assistant"),
 		flagSet.BoolVar(&options.AIOnly, "ai-only", false, "run AI assistant only and skip scanning"),
+		flagSet.BoolVar(&options.AIPOCSelect, "ai-poc-select", false, "enable AI to select extra xray poc prefixes for testing"),
 		flagSet.StringVar(&options.AIProvider, "ai-provider", "kimi", "ai provider preset: kimi/openai/deepseek/qwen/glm/openrouter/custom"),
 		flagSet.StringVar(&options.AIBaseURL, "ai-base-url", "", "AI API base url (auto-filled by provider preset if empty)"),
 		flagSet.StringVar(&options.AIModel, "ai-model", "", "AI model name (auto-filled by provider preset if empty)"),

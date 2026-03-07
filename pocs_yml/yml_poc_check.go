@@ -2,6 +2,8 @@ package pocs_yml
 
 import (
 	"embed"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/projectdiscovery/gologger"
@@ -50,4 +52,26 @@ func NucleiCheck(target string, ceyeapi string, ceyedomain string, proxy string,
 	// fmt.Println("muclei!!")
 	// fmt.Println(templatesList)
 	return check.NucleiStart(target, templatesList)
+}
+
+func ListXrayPocPrefixes() []string {
+	entries, err := XrayPocs.ReadDir("xrayFiles")
+	if err != nil {
+		return nil
+	}
+	prefixSet := make(map[string]struct{})
+	for _, entry := range entries {
+		name := strings.ToLower(entry.Name())
+		idx := strings.Index(name, "-")
+		if idx <= 0 {
+			continue
+		}
+		prefixSet[name[:idx]] = struct{}{}
+	}
+	prefixes := make([]string, 0, len(prefixSet))
+	for p := range prefixSet {
+		prefixes = append(prefixes, p)
+	}
+	sort.Strings(prefixes)
+	return prefixes
 }
