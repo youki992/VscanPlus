@@ -27,6 +27,7 @@ type Options struct {
 	InterfacesList bool // InterfacesList show interfaces list
 	AIEnable       bool // Enable Kimi AI assistant for decision support
 	AIOnly         bool // Run AI assistant only (skip scan)
+	AIAuto         bool // One-flag AI mode (enable decision + poc selection)
 	AIPOCSelect    bool // Enable AI-driven poc selection (xray+nuclei)
 	NucleiExternal bool // Use external nuclei binary for latest template compatibility
 	NucleiBin      string // External nuclei binary path
@@ -149,6 +150,7 @@ func ParseOptions() *Options {
 	)
 
 	flagSet.CreateGroup("ai", "AI Assistant",
+		flagSet.BoolVar(&options.AIAuto, "ai", false, "one-flag AI mode (equivalent to --ai-enable --ai-poc-select)"),
 		flagSet.BoolVar(&options.AIEnable, "ai-enable", false, "enable AI decision and recon assistant"),
 		flagSet.BoolVar(&options.AIOnly, "ai-only", false, "run AI assistant only and skip scanning"),
 		flagSet.BoolVar(&options.AIPOCSelect, "ai-poc-select", false, "enable AI to select extra xray+nuclei poc targets"),
@@ -168,6 +170,10 @@ func ParseOptions() *Options {
 
 	// Check if stdin pipe was given
 	options.Stdin = fileutil.HasStdin()
+	if options.AIAuto {
+		options.AIEnable = true
+		options.AIPOCSelect = true
+	}
 	resolveAIProviderDefaults(options)
 
 	// Read the inputs and configure the logging

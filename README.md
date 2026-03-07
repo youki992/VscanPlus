@@ -78,6 +78,7 @@ An optional AI decision assistant is available. It generates a Markdown report a
 
 Supported OpenAI-compatible providers: `kimi / openai / deepseek / qwen / glm / openrouter / custom`
 
+- One-flag AI mode (recommended): `-ai` (same as `-ai-enable -ai-poc-select`)
 - Enable AI: `-ai-enable`
 - AI-only mode: `-ai-only`
 - Enable AI POC selection (xray+nuclei): `-ai-poc-select`
@@ -96,11 +97,11 @@ Environment variable mapping:
 - `glm`: `ZHIPUAI_API_KEY`
 - `openrouter`: `OPENROUTER_API_KEY`
 
-Example (Kimi):
+Example (Kimi, one-flag AI decision):
 
 ```bash
 export KIMI_API_KEY="your_kimi_key"
-./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt -ai-enable -ai-provider kimi -ai-output ai-decision.md
+./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt -ai
 ```
 
 Example (OpenAI):

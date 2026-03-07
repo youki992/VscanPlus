@@ -82,6 +82,7 @@ sangfor
 
 支持主流 OpenAI 兼容接口：`kimi / openai / deepseek / qwen / glm / openrouter / custom`
 
+- 一键 AI 模式（推荐）：`-ai`（等价于 `-ai-enable -ai-poc-select`）
 - 启用 AI：`-ai-enable`
 - 仅跑 AI（不扫描）：`-ai-only`
 - 启用 AI 选 POC（xray+nuclei）：`-ai-poc-select`
@@ -100,11 +101,11 @@ sangfor
 - `glm`: `ZHIPUAI_API_KEY`
 - `openrouter`: `OPENROUTER_API_KEY`
 
-示例（Kimi）：
+示例（Kimi，单参数 AI 决策）：
 
 ```bash
 export KIMI_API_KEY="your_kimi_key"
-./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt -ai-enable -ai-provider kimi -ai-output ai-decision.md
+./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt -ai
 ```
 
 示例（DeepSeek）：
