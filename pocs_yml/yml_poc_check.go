@@ -169,12 +169,16 @@ func NucleiCheckExternal(target string, tags []string, nucleiBin string, nucleiT
 	if nucleiUpdate {
 		nucleiTemplateUpdateOnce.Do(func() {
 			for _, updateArgs := range [][]string{{"-update-templates"}, {"-ut"}} {
-				updateCmd := exec.Command(nucleiBin, updateArgs...)
+				args := append([]string{}, updateArgs...)
+				if strings.TrimSpace(nucleiTemplates) != "" {
+					args = append(args, "-ud", nucleiTemplates)
+				}
+				updateCmd := exec.Command(nucleiBin, args...)
 				if out, err := updateCmd.CombinedOutput(); err != nil {
-					gologger.Debug().Msgf("nuclei template update failed with %v: %s, output=%s", updateArgs, err, strings.TrimSpace(string(out)))
+					gologger.Debug().Msgf("nuclei template update failed with %v: %s, output=%s", args, err, strings.TrimSpace(string(out)))
 					continue
 				}
-				gologger.Info().Msg("nuclei templates updated")
+				gologger.Info().Msgf("nuclei templates updated (dir=%s)", nucleiTemplates)
 				break
 			}
 		})
