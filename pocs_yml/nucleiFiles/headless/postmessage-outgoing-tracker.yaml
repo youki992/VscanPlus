@@ -1,0 +1,72 @@
+id: postmessage-outgoing-tracker
+
+info:
+  name: Postmessage Outgoing Tracker
+  author: LogicalHunter
+  severity: info
+  reference:
+    - https://appcheck-ng.com/html5-cross-document-messaging-vulnerabilities/
+  tags: headless,postmessage,discovery
+
+headless:
+  - steps:
+      - action: setheader
+        args:
+          part: response
+          key: Content-Security-Policy
+          value: "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
+
+      - action: script
+        args:
+          hook: true
+          code: |
+            () => {
+              window.alerts = [];
+
+              logger = found => window.alerts.push(found);
+
+              function getStackTrace() {
+                var stack;
+                try {
+                  throw new Error('');
+                } catch (error) {
+                  stack = error.stack || '';
+                }
+
+                stack = stack.split('\n').map(line => line.trim());
+                return stack.splice(stack[0] == 'Error' ? 2 : 1);
+              }
+
+              var oldSender = window.postMessage;
+
+              window.postMessage = (data, origin) => {
+                if (origin == '*') {
+                  logger({stack: getStackTrace(), args: {data, origin}});
+                  return oldSender.apply(this, arguments);
+                }
+              };
+            }
+
+      - args:
+          url: "{{BaseURL}}"
+        action: navigate
+      - action: waitload
+
+      - action: script
+        name: alerts
+        args:
+          code: |
+            () => { window.alerts }
+
+    matchers:
+      - type: word
+        part: alerts
+        words:
+          - "at window.postMessage"
+
+    extractors:
+      - type: kval
+        part: alerts
+        kval:
+          - alerts
+# digest: 490a00463044022009553dca097e362f173deaf2489afc0e01e9f17d1612371bf9e1c481d4c024d602201bd914c32a6cf6bfefccb867324cde9e7533d7682e7ea0419f5bfadb499de135:922c64590222798bb761d5b6d8e72950
