@@ -3,6 +3,7 @@ package pocs_yml
 import (
 	"bufio"
 	"embed"
+	"fmt"
 	"os/exec"
 	"regexp"
 	"sort"
@@ -48,10 +49,11 @@ func XrayCheck(target string, ceyeapi string, ceyedomain string, proxy string, p
 
 func NucleiCheck(target string, ceyeapi string, ceyedomain string, proxy string, Tags []string, useExternal bool, nucleiBin string, nucleiTemplates string, nucleiUpdate bool) []string {
 	if useExternal && nucleiTemplates != "" {
-		out := NucleiCheckExternal(target, Tags, nucleiBin, nucleiTemplates, nucleiUpdate)
-		if len(out) > 0 {
+		out, err := NucleiCheckExternal(target, Tags, nucleiBin, nucleiTemplates, nucleiUpdate)
+		if err == nil {
 			return out
 		}
+		gologger.Debug().Msgf("external nuclei check failed, fallback to embedded templates: %s", err)
 	}
 
 	parse.InitExecuterOptions(100, 5)
@@ -119,32 +121,32 @@ func ListNucleiTags() []string {
 	return out
 }
 
-func NucleiCheckExternal(target string, tags []string, nucleiBin string, nucleiTemplates string, nucleiUpdate bool) []string {
-	if nucleiBin == "" {
-		nucleiBin = "nuclei"
+func normalizeNucleiTags(tags []string) []string {
+	re := regexp.MustCompile(`^[a-z0-9][a-z0-9_-]*$`)
+	set := make(map[string]struct{})
+	cleaned := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		t := strings.ToLower(strings.TrimSpace(tag))
+		if t == "" || !re.MatchString(t) {
+			continue
+		}
+		if _, exists := set[t]; exists {
+			continue
+		}
+		set[t] = struct{}{}
+		cleaned = append(cleaned, t)
 	}
+	sort.Strings(cleaned)
+	return cleaned
+}
 
-	if nucleiUpdate {
-		nucleiTemplateUpdateOnce.Do(func() {
-			updateCmd := exec.Command(nucleiBin, "-update-templates")
-			if out, err := updateCmd.CombinedOutput(); err != nil {
-				gologger.Debug().Msgf("nuclei template update failed: %s, output=%s", err, strings.TrimSpace(string(out)))
-			} else {
-				gologger.Info().Msg("nuclei templates updated")
-			}
-		})
-	}
-
-	args := []string{"-u", target, "-t", nucleiTemplates, "-silent"}
-	if len(tags) > 0 {
-		args = append(args, "-tags", strings.Join(tags, ","))
-	}
+func runExternalNuclei(nucleiBin string, args []string) ([]string, error) {
 	cmd := exec.Command(nucleiBin, args...)
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		gologger.Debug().Msgf("external nuclei run failed: %s", err)
-		return nil
+		return nil, fmt.Errorf("external nuclei run failed: %w, output=%s", err, strings.TrimSpace(string(out)))
 	}
+
 	scanner := bufio.NewScanner(strings.NewReader(string(out)))
 	results := make([]string, 0)
 	for scanner.Scan() {
@@ -153,5 +155,48 @@ func NucleiCheckExternal(target string, tags []string, nucleiBin string, nucleiT
 			results = append(results, line)
 		}
 	}
-	return results
+	if scanErr := scanner.Err(); scanErr != nil {
+		return nil, scanErr
+	}
+	return results, nil
+}
+
+func NucleiCheckExternal(target string, tags []string, nucleiBin string, nucleiTemplates string, nucleiUpdate bool) ([]string, error) {
+	if nucleiBin == "" {
+		nucleiBin = "nuclei"
+	}
+
+	if nucleiUpdate {
+		nucleiTemplateUpdateOnce.Do(func() {
+			for _, updateArgs := range [][]string{{"-update-templates"}, {"-ut"}} {
+				updateCmd := exec.Command(nucleiBin, updateArgs...)
+				if out, err := updateCmd.CombinedOutput(); err != nil {
+					gologger.Debug().Msgf("nuclei template update failed with %v: %s, output=%s", updateArgs, err, strings.TrimSpace(string(out)))
+					continue
+				}
+				gologger.Info().Msg("nuclei templates updated")
+				break
+			}
+		})
+	}
+
+	cleanTags := normalizeNucleiTags(tags)
+	baseArgs := []string{"-u", target, "-t", nucleiTemplates, "-silent"}
+	if len(cleanTags) > 0 {
+		withTags := append(append([]string{}, baseArgs...), "-tags", strings.Join(cleanTags, ","))
+		results, err := runExternalNuclei(nucleiBin, withTags)
+		if err != nil {
+			return nil, err
+		}
+		if len(results) > 0 {
+			return results, nil
+		}
+		gologger.Debug().Msg("external nuclei returned no results with selected tags, retrying without tags")
+	}
+
+	results, err := runExternalNuclei(nucleiBin, baseArgs)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
 }

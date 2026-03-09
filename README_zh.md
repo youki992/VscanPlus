@@ -84,14 +84,48 @@ sangfor
 
 - 一键 AI 模式（推荐）：`-ai`（等价于 `-ai-enable -ai-poc-select`）
 - 启用 AI：`-ai-enable`
-- 仅跑 AI（不扫描）：`-ai-only`
-- 启用 AI 选 POC（xray+nuclei）：`-ai-poc-select`
-- 使用外部最新 nuclei 引擎：`-nuclei-external -nuclei-templates /path/to/nuclei-templates`
-- 扫描前自动更新模板：`-nuclei-update`
+- 仅跑 AI（不扫描）：`-ai-only`（需配合 `-ai-enable`）
+- 启用 AI 选 POC（xray+nuclei）：`-ai-poc-select`（需配合 `-ai-enable` 或直接用 `-ai`）
 - 选择厂商：`-ai-provider kimi`
 - API Key：`-ai-api-key` 或对应环境变量
 - 额外上下文：`-ai-prompt "目标是电商业务，优先关注登录与支付面"`
 - 报告输出：`-ai-output ai-decision.md`
+
+## 外部 Nuclei 调用层
+
+用于接入最新 Nuclei 引擎和模板库：
+
+- 启用外部 Nuclei：`-nuclei-external`
+- 指定外部二进制：`-nuclei-bin`（默认 `nuclei`）
+- 指定模板目录：`-nuclei-templates /path/to/nuclei-templates`（与 `-nuclei-external` 联动必填）
+- 扫描前自动更新模板：`-nuclei-update`（仅对 `-nuclei-external` 生效）
+
+## AI + 外部 Nuclei 联动
+
+如果你要“AI 决策 + 最新模板扫描”同时开启，推荐：
+
+```bash
+./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt \
+  -ai -ai-provider kimi \
+  -nuclei-external -nuclei-templates /opt/nuclei-templates -nuclei-update
+```
+
+参数联动（重要）：
+
+- `-nuclei-external` 必须搭配 `-nuclei-templates`
+- `-nuclei-update` 建议与 `-nuclei-external` 一起使用
+- `-ai-only` 必须与 `-ai-enable` 同时使用
+- `-ai-poc-select` 建议与 `-ai-enable` 或 `-ai` 同时使用
+
+错误示例（会报错或不生效）：
+
+```bash
+# 缺少 templates 路径
+./VscanPlus -host https://example.com -nuclei-external
+
+# 单独使用 update，不会触发外部 nuclei 更新链路
+./VscanPlus -host https://example.com -nuclei-update
+```
 
 环境变量映射：
 

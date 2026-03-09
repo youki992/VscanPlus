@@ -80,14 +80,48 @@ Supported OpenAI-compatible providers: `kimi / openai / deepseek / qwen / glm / 
 
 - One-flag AI mode (recommended): `-ai` (same as `-ai-enable -ai-poc-select`)
 - Enable AI: `-ai-enable`
-- AI-only mode: `-ai-only`
-- Enable AI POC selection (xray+nuclei): `-ai-poc-select`
-- Use external latest nuclei engine: `-nuclei-external -nuclei-templates /path/to/nuclei-templates`
-- Auto update templates before scan: `-nuclei-update`
+- AI-only mode: `-ai-only` (must be used with `-ai-enable`)
+- Enable AI POC selection (xray+nuclei): `-ai-poc-select` (use with `-ai-enable` or just `-ai`)
 - Select provider: `-ai-provider kimi`
 - API key: `-ai-api-key` or provider env key
 - Extra context: `-ai-prompt "focus on auth/payment attack surface"`
 - Output file: `-ai-output ai-decision.md`
+
+## External Nuclei Layer
+
+Use external Nuclei engine and templates for latest compatibility.
+
+- Enable external Nuclei: `-nuclei-external`
+- External Nuclei binary path: `-nuclei-bin` (default: `nuclei`)
+- External templates path: `-nuclei-templates /path/to/nuclei-templates` (required with `-nuclei-external`)
+- Auto update templates before scan: `-nuclei-update` (effective only with `-nuclei-external`)
+
+## AI + External Nuclei (Combined)
+
+Recommended when you want both AI decision + latest external templates:
+
+```bash
+./VscanPlus -host https://example.com -p 80,443,8080 -o result.txt \
+  -ai -ai-provider kimi \
+  -nuclei-external -nuclei-templates /opt/nuclei-templates -nuclei-update
+```
+
+Flag dependency notes (important):
+
+- `-nuclei-external` requires `-nuclei-templates`
+- `-nuclei-update` should be used with `-nuclei-external`
+- `-ai-only` requires `-ai-enable`
+- `-ai-poc-select` is intended to be used with `-ai-enable` or `-ai`
+
+Invalid/ineffective examples:
+
+```bash
+# missing templates path
+./VscanPlus -host https://example.com -nuclei-external
+
+# update flag alone does not trigger external nuclei update flow
+./VscanPlus -host https://example.com -nuclei-update
+```
 
 Environment variable mapping:
 
