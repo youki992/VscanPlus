@@ -1,6 +1,7 @@
 package fingerprint
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -67,8 +68,11 @@ func logMatchedDomain(domain string) {
 
 // 执行DNS查询并返回CNAME记录值
 func dnsCNAME(domain string) (string, error) {
+	if strings.TrimSpace(domain) == "" {
+		return "", fmt.Errorf("empty domain")
+	}
 	resolver := new(net.Resolver)
-	answers, err := resolver.LookupCNAME(nil, domain)
+	answers, err := resolver.LookupCNAME(context.Background(), domain)
 	if err != nil {
 		return "", err
 	}
@@ -76,6 +80,10 @@ func dnsCNAME(domain string) (string, error) {
 }
 
 func FingerScan(headers map[string][]string, body []byte, title string, url string) []string {
+	defer func() {
+		if recover() != nil {
+		}
+	}()
 	bodyString := string(body)
 	headersjson := mapToJson(headers)
 	favhash := getfavicon(bodyString, url)
